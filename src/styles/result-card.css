@@ -1,0 +1,11 @@
+/* ── Result card ───────────────────────────────────────────────────────────────
+   Status classes applied dynamically by displayResult() in src/ui/display.js.
+     .status-true    → green  (claim confirmed by official data)
+     .status-partial → amber  (claim partially supported or outdated)
+     .status-false   → red    (claim refuted by official data)
+     .status-no_data → grey   (no relevant official data found)            */
+
+.status-true    { border-left-color: #10b981; background-color: #ecfdf5; }
+.status-partial { border-left-color: #f59e0b; background-color: #fffbeb; }
+.status-false   { border-left-color: #f43f5e; background-color: #fff1f2; }
+.status-no_data { border-left-color: #94a3b8; background-color: #f8fafc; }

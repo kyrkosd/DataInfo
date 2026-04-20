@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataInfo</title>
+    <meta name="description" content="DataInfo — Statistical Claim Validator">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="src/styles/base.css">
+    <link rel="stylesheet" href="src/styles/result-card.css">
+    <link rel="stylesheet" href="src/styles/components.css">
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- ── NAV ─────────────────────────────────────────────────────────────── -->
+    <nav class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-stone-300 text-stone-700 rounded font-bold flex items-center justify-center text-sm">DI</div>
+            <h1 class="text-2xl font-bold text-stone-800 tracking-tight">DataInfo</h1>
+        </div>
+        <button id="helpBtn" class="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-md font-medium transition-colors">
+            Guide
+        </button>
+    </nav>
+
+    <!-- ── PAGE TABS ─────────────────────────────────────────────────────────── -->
+    <!-- Official Sources: RAG mode, no web access. Web Search: Google grounding enabled. -->
+    <div class="bg-stone-100 border-b border-stone-300">
+        <div class="container mx-auto px-4 max-w-6xl flex gap-1 pt-2">
+            <button id="tabOfficial" class="tab-btn tab-active px-5 py-2.5 rounded-t-lg font-semibold text-sm transition-colors">
+                Official Sources
+            </button>
+            <button id="tabWeb" class="tab-btn px-5 py-2.5 rounded-t-lg font-semibold text-sm transition-colors">
+                Web Search
+            </button>
+        </div>
+    </div>
+
+    <!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+        <section class="mb-16">
+
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                <h2 class="text-4xl font-extrabold text-stone-900 mb-4">Validate Statistical Claims</h2>
+                <p id="pageDesc" class="text-lg text-stone-600">Enter a statistical claim below. Our tool queries official databases and cites verified sources.</p>
+                <div id="webDisclaimer" class="hidden mt-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm max-w-xl mx-auto">
+                    <strong>Note:</strong> Web Search results come from general web sources and may include unofficial or unverified content. Use critical judgment when interpreting these results.
+                </div>
+            </div>
+
+            <!-- Search bar -->
+            <div class="max-w-2xl mx-auto bg-white p-2 rounded-xl shadow-md border border-stone-200 flex items-center">
+                <div class="pl-4 text-stone-400"><span class="css-icon-search"></span></div>
+                <input type="text" id="searchInput"
+                    class="w-full px-4 py-3 outline-none text-lg text-stone-800 bg-transparent placeholder-stone-400"
+                    placeholder="e.g., 67% of Americans are overweight...">
+                <button id="searchSubmit"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors whitespace-nowrap">
+                    Analyze Claim
+                </button>
+            </div>
+            <p id="autocorrectFeedback" class="max-w-2xl mx-auto text-sm text-indigo-600 mt-3 text-left font-medium hidden pl-4"></p>
+
+            <!-- Loading state -->
+            <div id="loadingState" class="hidden flex flex-col items-center justify-center mt-12">
+                <div class="loader mb-4"></div>
+                <p id="loadingMsg" class="text-stone-500 font-medium animate-pulse">Querying official databases...</p>
+            </div>
+
+            <!-- Result card -->
+            <div id="resultContainer" class="hidden max-w-3xl mx-auto mt-12 border-l-4 rounded-r-xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="resultStatus" class="text-2xl font-bold uppercase tracking-wide"></h3>
+                    <span id="resultBadge" class="px-3 py-1 rounded-full text-sm font-bold"></span>
+                </div>
+                <div id="challengeInfo" class="hidden flex flex-wrap items-center gap-2 mb-4 text-xs">
+                    <span id="challengeBadge" class="px-2 py-0.5 rounded font-semibold bg-purple-100 text-purple-800"></span>
+                    <span id="confidenceBadge" class="px-2 py-0.5 rounded font-semibold"></span>
+                </div>
+                <p id="resultText" class="text-stone-700 text-lg mb-6 leading-relaxed"></p>
+
+                <!-- Reasoning steps -->
+                <div id="reasoningSection" class="hidden mb-4 bg-stone-50 border border-stone-200 rounded-lg overflow-hidden text-sm">
+                    <button id="reasoningToggle" class="flex items-center justify-between w-full px-4 py-2.5 font-semibold text-stone-700 hover:bg-stone-100 transition-colors">
+                        <span>Reasoning Steps</span>
+                        <span id="reasoningArrow" class="text-stone-400">▼</span>
+                    </button>
+                    <ol id="reasoningList" class="list-decimal pl-8 pr-4 pb-3 space-y-1 text-stone-600 hidden"></ol>
+                </div>
+
+                <!-- Metric disambiguation -->
+                <div id="metricInfo" class="hidden mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-stone-700">
+                    <p class="mb-1"><strong class="text-blue-800">Metric used:</strong> <span id="metricUsed"></span></p>
+                    <div id="alternativesSection" class="hidden mt-2">
+                        <strong class="text-blue-800">Alternative definitions:</strong>
+                        <ul id="alternativesList" class="list-disc pl-5 mt-1 space-y-0.5 text-stone-600"></ul>
+                    </div>
+                </div>
+
+                <div class="bg-white bg-opacity-50 p-4 rounded-lg border border-stone-200">
+                    <h4 id="sourcesLabel" class="font-semibold text-stone-800 mb-2">Verified Sources:</h4>
+                    <ul id="resultSources" class="list-disc pl-5 text-indigo-600 space-y-1"></ul>
+                    <p id="dataVintage" class="hidden mt-3 text-xs text-stone-400 italic"></p>
+                </div>
+            </div>
+
+            <div class="text-center mt-8 text-sm text-stone-500">
+                <p>Try: "67% overweight", "AI jobs 2030", "earth flat"</p>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- ── GUIDE MODAL ──────────────────────────────────────────────────────── -->
+    <div id="guideModal" class="fixed inset-0 bg-stone-900 bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-8 relative">
+            <button id="closeModal" class="absolute top-4 right-6 text-stone-400 hover:text-stone-800 text-3xl font-bold">&times;</button>
+            <h2 class="text-3xl font-bold text-stone-900 mb-6 border-b pb-4">Guide: A few words about the tool.</h2>
+            <div class="space-y-6 text-stone-700">
+                <p class="text-lg font-medium text-indigo-700">This guide details the way of usage and reason behind the tool.</p>
+                <div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">1. Fact checking.</h3>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong>Only official data:</strong> The data provided here are only from official sources. So, conspiracy theorists, you won't find any data from aliensandreptilesruletheworld.com.</li>
+                        <li><strong>Backend API Layer:</strong> The data comes from API calls, so the AI only manipulates them to provide the text. No hallucinations, no biases.</li>
+                        <li><strong>No personal data:</strong> No sign-in required, so don't worry about your privacy.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">2. Future development</h3>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong>Web Search tab:</strong> Already live — search the general web for perspectives beyond official data.</li>
+                        <li><strong>Reviewing and conducting reports:</strong> You will be able to review and conduct reports based on official data.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">3. Who is it for?</h3>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong>People trying to win an argument:</strong> Look no further.</li>
+                        <li><strong>Students:</strong> Check data for research or homework. Use it to learn, not to copy-paste.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">4. Who not to use:</h3>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><strong>Conspiracy theorists:</strong> You won't find your sources here. Even though they are fun to read.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SCRIPTS ───────────────────────────────────────────────────────────── -->
+    <!-- Load order matters: sources → config → utils → api → analyze → ui -->
+    <script src="src/sources/global.js"></script>
+    <script src="src/sources/americas.js"></script>
+    <script src="src/sources/europe.js"></script>
+    <script src="src/sources/asia.js"></script>
+    <script src="src/sources/africa.js"></script>
+    <script src="src/sources/oceania.js"></script>
+    <script src="src/config.js"></script>
+    <script src="src/utils.js"></script>
+    <script src="src/api.js"></script>
+    <script src="src/analyze.js"></script>
+    <script src="src/ui/display.js"></script>
+    <script src="src/ui/tabs.js"></script>
+    <script src="src/ui/events.js"></script>
+
+</body>
+</html>
