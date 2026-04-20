@@ -48,15 +48,22 @@ function detectTopics(query) {
 // Wraps fetch() with exponential backoff for 429 / 5xx responses.
 // Non-retryable errors (400, 401, 403) are returned immediately.
 async function fetchWithBackoff(url, options, maxRetries = 3) {
+    let lastRes;
     let delay = 1000;
     for (let i = 0; i < maxRetries; i++) {
         try {
             const res = await fetch(url, options);
+            lastRes = res; // Store the latest response
             if (res.ok || (res.status !== 429 && res.status < 500)) return res;
         } catch (e) {
+            // On network error, if it's the last attempt, re-throw the error.
             if (i === maxRetries - 1) throw e;
         }
-        await new Promise(r => setTimeout(r, delay));
-        delay *= 2;
+        // Wait before the next retry, but not after the last attempt.
+        if (i < maxRetries - 1) {
+            await new Promise(r => setTimeout(r, delay));
+            delay *= 2;
+        }
     }
+    return lastRes; // Return the last response if all retries failed.
 }
