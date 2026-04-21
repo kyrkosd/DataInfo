@@ -1,3 +1,6 @@
+/* global $, searchInput, activeTab, autocorrectFeedback, applyAutocorrect,
+          analyzeClaim, analyzeClaimWeb, switchTab */
+
 // ─── UI: EVENTS ───────────────────────────────────────────────────────────────
 // submit — entry point that dispatches to the active tab's analyze function.
 // All DOM event listeners are registered here.

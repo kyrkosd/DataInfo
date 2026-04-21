@@ -234,3 +234,5 @@ const SOURCES_AMERICAS = {
         categories: ['demographics', 'finance', 'labor']
     },
 };
+
+window.SOURCES_AMERICAS = SOURCES_AMERICAS;

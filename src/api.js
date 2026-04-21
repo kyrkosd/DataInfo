@@ -98,16 +98,12 @@ async function queryWHO(query, searchTerm = query) {
 // ─── queryBLS ─────────────────────────────────────────────────────────────────
 // BLS v2 API requires specific series IDs — free-text search not supported.
 // Implementation pending: needs a series-ID lookup table keyed by topic.
-async function queryBLS(query, key) {
-    return null;
-}
+async function queryBLS(_query, _key) { return null; }
 
 // ─── queryCensus ──────────────────────────────────────────────────────────────
 // Census API requires specific table and variable codes per dataset.
 // Implementation pending: needs a dataset/variable mapping table.
-async function queryCensus(query, key) {
-    return null;
-}
+async function queryCensus(_query, _key) { return null; }
 
 // ─── queryFRED ────────────────────────────────────────────────────────────────
 // Queries the Federal Reserve Bank of St. Louis economic database (FRED).
@@ -150,7 +146,6 @@ async function queryFRED(query, key, searchTerm = query) {
 // Step 1: catalog search by keyword. Step 2: fetch sample rows from top result.
 async function queryCDC(query, key, searchTerm = query) {
     try {
-        const tokenParam = key ? `?$$app_token=${encodeURIComponent(key)}` : '';
         const sr = await fetch(`https://data.cdc.gov/api/views?q=${encodeURIComponent(searchTerm)}&limit=2`);
         if (!sr.ok) return null;
         const datasets = await sr.json();
@@ -180,26 +175,27 @@ async function queryCDC(query, key, searchTerm = query) {
     } catch { return null; }
 }
 
-// ─── queryOECD ────────────────────────────────────────────────────────────────
-// OECD SDMX-JSON API — requires dataflow and dimension codes; pending implementation.
-async function queryOECD(query, searchTerm = query) { return null; }
+// ─── Pending implementations ───────────────────────────────────────────────────
+// These stubs maintain the correct call signature for analyze.js.
+// Params prefixed with _ signal intentional non-use until implemented.
+async function queryOECD(_query)              { return null; }
+async function queryIMF(_query)               { return null; }
+async function queryEIA(_query, _key)         { return null; }
+async function queryEurostat(_query)          { return null; }
+async function queryILO(_query)               { return null; }
+async function queryUN(_query)                { return null; }
 
-// ─── queryIMF ─────────────────────────────────────────────────────────────────
-// IMF DataMapper — requires indicator codes; pending implementation.
-async function queryIMF(query, searchTerm = query) { return null; }
-
-// ─── queryEIA ─────────────────────────────────────────────────────────────────
-// EIA v2 API — requires route and facet mapping; pending implementation.
-async function queryEIA(query, key, searchTerm = query) { return null; }
-
-// ─── queryEurostat ────────────────────────────────────────────────────────────
-// Eurostat SDMX API — requires dataset code lookup; pending implementation.
-async function queryEurostat(query, searchTerm = query) { return null; }
-
-// ─── queryILO ─────────────────────────────────────────────────────────────────
-// ILO ILOSTAT API — requires indicator codes; pending implementation.
-async function queryILO(query, searchTerm = query) { return null; }
-
-// ─── queryUN ──────────────────────────────────────────────────────────────────
-// UN Data API — requires series codes; pending implementation.
-async function queryUN(query, searchTerm = query) { return null; }
+// Expose as browser globals — satisfies ESLint no-unused-vars.
+window.queryPubMed    = queryPubMed;
+window.queryWorldBank = queryWorldBank;
+window.queryWHO       = queryWHO;
+window.queryBLS       = queryBLS;
+window.queryCensus    = queryCensus;
+window.queryFRED      = queryFRED;
+window.queryCDC       = queryCDC;
+window.queryOECD      = queryOECD;
+window.queryIMF       = queryIMF;
+window.queryEIA       = queryEIA;
+window.queryEurostat  = queryEurostat;
+window.queryILO       = queryILO;
+window.queryUN        = queryUN;

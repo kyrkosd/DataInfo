@@ -1,3 +1,6 @@
+/* global SOURCES_GLOBAL, SOURCES_AMERICAS, SOURCES_EUROPE,
+          SOURCES_ASIA, SOURCES_AFRICA, SOURCES_OCEANIA */
+
 // ─── CONFIG — edit these values to change behaviour ───────────────────────────
 
 const GEMINI_API_KEY = "";           // https://aistudio.google.com
@@ -57,3 +60,9 @@ const API_SOURCES = {
     ...SOURCES_AFRICA,
     ...SOURCES_OCEANIA
 };
+
+window.GEMINI_API_KEY = GEMINI_API_KEY;
+window.GEMINI_MODEL   = GEMINI_MODEL;
+window.AUTOCORRECT    = AUTOCORRECT;
+window.TOPIC_KEYWORDS = TOPIC_KEYWORDS;
+window.API_SOURCES    = API_SOURCES;

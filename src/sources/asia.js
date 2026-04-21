@@ -258,3 +258,5 @@ const SOURCES_ASIA = {
         categories: ['demographics', 'finance']
     },
 };
+
+window.SOURCES_ASIA = SOURCES_ASIA;

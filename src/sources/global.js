@@ -84,3 +84,5 @@ const SOURCES_GLOBAL = {
         categories: ['demographics']
     },
 };
+
+window.SOURCES_GLOBAL = SOURCES_GLOBAL;

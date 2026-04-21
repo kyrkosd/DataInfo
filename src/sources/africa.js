@@ -235,3 +235,5 @@ const SOURCES_AFRICA = {
         categories: ['demographics', 'finance']
     },
 };
+
+window.SOURCES_AFRICA = SOURCES_AFRICA;

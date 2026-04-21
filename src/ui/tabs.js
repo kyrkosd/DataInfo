@@ -1,3 +1,5 @@
+/* global $, activeTab, resultContainer, autocorrectFeedback */
+
 // ─── UI: TABS ─────────────────────────────────────────────────────────────────
 // switchTab — activates a tab, swaps description text, shows/hides disclaimer,
 // and clears any stale result from the previous tab.
@@ -18,3 +20,5 @@ function switchTab(tab) {
     resultContainer.classList.add('hidden');
     autocorrectFeedback.classList.add('hidden');
 }
+
+window.switchTab = switchTab;

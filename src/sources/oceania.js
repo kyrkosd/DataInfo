@@ -90,3 +90,5 @@ const SOURCES_OCEANIA = {
         categories: ['environment']
     },
 };
+
+window.SOURCES_OCEANIA = SOURCES_OCEANIA;

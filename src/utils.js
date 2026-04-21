@@ -1,3 +1,5 @@
+/* global AUTOCORRECT, TOPIC_KEYWORDS */
+
 // ─── DOM helper ───────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
@@ -43,3 +45,8 @@ async function fetchWithBackoff(url, options, maxRetries = 3) {
     if (!lastRes) throw new Error('Network error — no response received after retries');
     return lastRes;
 }
+
+window.$                = $;
+window.applyAutocorrect = applyAutocorrect;
+window.detectTopics     = detectTopics;
+window.fetchWithBackoff = fetchWithBackoff;

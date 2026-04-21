@@ -318,3 +318,5 @@ const SOURCES_EUROPE = {
         categories: ['demographics', 'finance']
     },
 };
+
+window.SOURCES_EUROPE = SOURCES_EUROPE;

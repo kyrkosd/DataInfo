@@ -1,3 +1,5 @@
+/* global $, loadingState, resultContainer */
+
 // ─── UI: DISPLAY ──────────────────────────────────────────────────────────────
 // showError and displayResult — populate and show the result card.
 
@@ -110,3 +112,6 @@ function displayResult(data, sourceLabel = 'Verified Sources:') {
 
     resultContainer.classList.remove('hidden');
 }
+
+window.showError     = showError;
+window.displayResult = displayResult;

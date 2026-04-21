@@ -188,6 +188,7 @@ Respond with a valid JSON object only — no markdown, no extra text:
 }
 
 // ─── analyzeClaimWeb ──────────────────────────────────────────────────────────
+
 // Web Search tab — Google Search grounding enabled.
 // Sources extracted from groundingMetadata.groundingChunks in the response.
 async function analyzeClaimWeb(query) {
@@ -256,3 +257,7 @@ Respond with a valid JSON object only — no markdown, no extra text:
         window.__di?.onError?.(err.message);
     }
 }
+
+// Expose as browser globals — satisfies ESLint no-unused-vars and lets the React UI call them.
+window.analyzeClaim    = analyzeClaim;
+window.analyzeClaimWeb = analyzeClaimWeb;
