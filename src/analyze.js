@@ -1,3 +1,10 @@
+/* global GEMINI_API_KEY, GEMINI_MODEL, API_SOURCES,
+          detectTopics, fetchWithBackoff,
+          queryPubMed, queryWorldBank, queryWHO, queryBLS, queryCensus,
+          queryFRED, queryCDC, queryOECD, queryIMF, queryEIA,
+          queryEurostat, queryILO, queryUN */
+/* exported analyzeClaim, analyzeClaimWeb */
+
 // ─── preprocessClaim ─────────────────────────────────────────────────────────
 // Makes a fast Gemini call BEFORE any API queries to extract structured intent.
 // Returns: topic, geography, time_period, metric, and per-API optimized search terms.
@@ -38,29 +45,21 @@ CLAIM: "${query}"
 
 // ─── analyzeClaim ─────────────────────────────────────────────────────────────
 // Official Sources tab — RAG mode. Gemini only sees data we fetch from APIs.
-// Steps: preprocess → topic detection → source selection → parallel API calls
-//        → build context → Gemini RAG call → parse response → displayResult()
+// Calls window.__di.onResult / window.__di.onError when done.
 async function analyzeClaim(query) {
-    resultContainer.classList.add('hidden');
-    loadingState.classList.remove('hidden');
-    loadingState.classList.add('flex');
-
     if (!GEMINI_API_KEY) {
-        showError("API key not set. Add your Gemini API key to GEMINI_API_KEY in src/config.js.");
+        window.__di?.onError?.("API key not set. Add your Gemini API key to GEMINI_API_KEY in src/config.js.");
         return;
     }
 
     try {
-        // Step 1: extract intent + optimized search terms
-        $('loadingMsg').textContent = 'Understanding your claim...';
+        window.__di?.setLoadingMsg?.('Understanding your claim...');
         const intent = await preprocessClaim(query);
 
-        // Step 2: topic detection — use Gemini intent if available, else keyword fallback
         const topics = (intent?.topic && intent.topic !== 'general')
             ? new Set([intent.topic])
             : detectTopics(query);
 
-        // Step 3: source selection
         const selected = Object.entries(API_SOURCES).filter(([, src]) => {
             if (!src.enabled) return false;
             if (topics.size === 0) return true;
@@ -68,27 +67,35 @@ async function analyzeClaim(query) {
         });
 
         const topicLabel = topics.size ? [...topics].join(', ') : 'general';
-        $('loadingMsg').textContent = `Querying ${selected.map(([, s]) => s.label).join(', ')}...`;
+        window.__di?.setLoadingMsg?.(`Querying ${selected.map(([, s]) => s.label).join(', ') || 'sources'}...`);
 
-        // Step 4: parallel API calls with optimized search terms
-        const EVIDENCE_TYPES = { pubmed: 'Research Abstract', worldbank: 'Statistical Indicator', who: 'Statistical Indicator', bls: 'Labor Statistics', census: 'Census Data', fred: 'Economic Time Series', cdc: 'Public Health Data', oecd: 'Statistical Indicator', imf: 'Financial Indicator', eia: 'Energy Statistics', eurostat: 'EU Statistical Data', ilo: 'Labor Statistics', un: 'UN Statistical Data' };
+        const EVIDENCE_TYPES = {
+            pubmed: 'Research Abstract', worldbank: 'Statistical Indicator',
+            who: 'Statistical Indicator', bls: 'Labor Statistics',
+            census: 'Census Data', fred: 'Economic Time Series',
+            cdc: 'Public Health Data', oecd: 'Statistical Indicator',
+            imf: 'Financial Indicator', eia: 'Energy Statistics',
+            eurostat: 'EU Statistical Data', ilo: 'Labor Statistics',
+            un: 'UN Statistical Data'
+        };
+
         const fetches = selected.map(([key, src]) => {
             const terms = intent?.search_terms || {};
             let p;
-            if (key === 'pubmed')           p = queryPubMed(query, src.key, terms.pubmed);
-            else if (key === 'worldbank')   p = queryWorldBank(query, terms.worldbank);
-            else if (key === 'who')         p = queryWHO(query, terms.who);
-            else if (key === 'bls')         p = queryBLS(query, src.key);
-            else if (key === 'census')      p = queryCensus(query, src.key);
-            else if (key === 'fred')        p = queryFRED(query, src.key, terms.fred);
-            else if (key === 'cdc')         p = queryCDC(query, src.key, terms.cdc);
-            else if (key === 'oecd')        p = queryOECD(query, terms.oecd);
-            else if (key === 'imf')         p = queryIMF(query, terms.imf);
-            else if (key === 'eia')         p = queryEIA(query, src.key, terms.eia);
-            else if (key === 'eurostat')    p = queryEurostat(query, terms.eurostat);
-            else if (key === 'ilo')         p = queryILO(query, terms.ilo);
-            else if (key === 'un')          p = queryUN(query, terms.un);
-            else p = Promise.resolve(null);
+            if      (key === 'pubmed')     p = queryPubMed(query, src.key, terms.pubmed);
+            else if (key === 'worldbank')  p = queryWorldBank(query, terms.worldbank);
+            else if (key === 'who')        p = queryWHO(query, terms.who);
+            else if (key === 'bls')        p = queryBLS(query, src.key);
+            else if (key === 'census')     p = queryCensus(query, src.key);
+            else if (key === 'fred')       p = queryFRED(query, src.key, terms.fred);
+            else if (key === 'cdc')        p = queryCDC(query, src.key, terms.cdc);
+            else if (key === 'oecd')       p = queryOECD(query, terms.oecd);
+            else if (key === 'imf')        p = queryIMF(query, terms.imf);
+            else if (key === 'eia')        p = queryEIA(query, src.key, terms.eia);
+            else if (key === 'eurostat')   p = queryEurostat(query, terms.eurostat);
+            else if (key === 'ilo')        p = queryILO(query, terms.ilo);
+            else if (key === 'un')         p = queryUN(query, terms.un);
+            else                           p = Promise.resolve(null);
             const evType = EVIDENCE_TYPES[key] || 'Official Data';
             return p.then(r => r ? { ...r, evidence_type: evType } : null);
         });
@@ -96,9 +103,7 @@ async function analyzeClaim(query) {
         const results = (await Promise.all(fetches)).filter(Boolean);
 
         if (!results.length) {
-            loadingState.classList.add('hidden');
-            loadingState.classList.remove('flex');
-            displayResult({
+            window.__di?.onResult?.({
                 status:  'no_data',
                 title:   'No Official Data Found',
                 text:    `No results from the ${topicLabel} sources. Try rephrasing, or enable additional sources in src/config.js.`,
@@ -107,13 +112,11 @@ async function analyzeClaim(query) {
             return;
         }
 
-        // Step 5: build context block
-        $('loadingMsg').textContent = 'Analysing with official data...';
+        window.__di?.setLoadingMsg?.('Analysing with official data...');
         const context     = results.map(r => `=== ${r.label} [${r.evidence_type || 'Official Data'}] ===\n${r.data}`).join('\n\n');
-        const geoContext  = intent?.geography  ? `Geographic focus: ${intent.geography}.`        : '';
+        const geoContext  = intent?.geography  ? `Geographic focus: ${intent.geography}.`         : '';
         const timeContext = intent?.time_period ? `Time period referenced: ${intent.time_period}.` : '';
 
-        // Step 6: RAG prompt — requests metric disambiguation and data vintage
         const prompt = `You are a strict statistical fact-checker.
 
 Below is data retrieved directly from official sources. Each source is labeled with its evidence type.
@@ -133,10 +136,10 @@ Based solely on the data above:
 - If the data is insufficient or unrelated to verify the claim, set status to "no_data".
 
 IMPORTANT — also include:
-- metric_used: the exact metric/definition from the data used to evaluate this claim (e.g. "U-3 unemployment rate, seasonally adjusted"). Be specific.
+- metric_used: the exact metric/definition from the data used to evaluate this claim. Be specific.
 - alternatives: an array of other metric definitions that could give a different result. Empty array if none.
 - data_vintage: the most recent data year/period used. Add "(preliminary)" if the data may be revised.
-- challenge_type: the main verification challenge — one of: "Numerical Reasoning" | "Multi-hop Reasoning" | "Entity Disambiguation" | "Combining Tables and Text" | "Insufficient Data" | "None"
+- challenge_type: one of: "Numerical Reasoning" | "Multi-hop Reasoning" | "Entity Disambiguation" | "Combining Tables and Text" | "Insufficient Data" | "None"
 - reasoning_steps: array of 2-4 short sentences showing the logical steps taken to reach the verdict
 - confidence: "high" if data directly confirms or refutes the claim, "medium" if partially, "low" if inferred or sparse
 
@@ -167,41 +170,34 @@ Respond with a valid JSON object only — no markdown, no extra text:
             throw new Error(err.error?.message || `HTTP ${res.status}`);
         }
 
-        // Step 7: parse response
         const data   = await res.json();
         const raw    = data.candidates[0].content.parts[0].text.replace(/```json\n?|```/g, '').trim();
         const result = JSON.parse(raw);
 
-        result.sources = results.map(r => ({ name: r.label, url: r.url }));
+        result.sources = results.map(r => ({ name: r.label, url: r.url, evidence: r.evidence_type }));
 
         if (!result.data_vintage) {
             const dates = results.map(r => r.date).filter(Boolean);
             if (dates.length) result.data_vintage = dates.sort().reverse()[0];
         }
 
-        loadingState.classList.add('hidden');
-        loadingState.classList.remove('flex');
-        displayResult(result);
+        window.__di?.onResult?.(result);
     } catch (err) {
-        showError(err.message);
+        window.__di?.onError?.(err.message);
     }
 }
 
 // ─── analyzeClaimWeb ──────────────────────────────────────────────────────────
-// Web Search tab — Google Search grounding enabled. Gemini can retrieve live web results.
+// Web Search tab — Google Search grounding enabled.
 // Sources extracted from groundingMetadata.groundingChunks in the response.
 async function analyzeClaimWeb(query) {
-    resultContainer.classList.add('hidden');
-    loadingState.classList.remove('hidden');
-    loadingState.classList.add('flex');
-
     if (!GEMINI_API_KEY) {
-        showError("API key not set. Add your Gemini API key to GEMINI_API_KEY in src/config.js.");
+        window.__di?.onError?.("API key not set. Add your Gemini API key to GEMINI_API_KEY in src/config.js.");
         return;
     }
 
     try {
-        $('loadingMsg').textContent = 'Searching the web...';
+        window.__di?.setLoadingMsg?.('Searching the web...');
 
         const prompt = `You are a fact-checker that searches the web broadly for up-to-date information.
 
@@ -255,10 +251,8 @@ Respond with a valid JSON object only — no markdown, no extra text:
             result.sources = [{ name: 'General web search (no specific sources cited)', url: '#' }];
         }
 
-        loadingState.classList.add('hidden');
-        loadingState.classList.remove('flex');
-        displayResult(result, 'Web Sources:');
+        window.__di?.onResult?.(result);
     } catch (err) {
-        showError(err.message);
+        window.__di?.onError?.(err.message);
     }
 }
