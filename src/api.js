@@ -98,12 +98,12 @@ async function queryWHO(query, searchTerm = query) {
 // ─── queryBLS ─────────────────────────────────────────────────────────────────
 // BLS v2 API requires specific series IDs — free-text search not supported.
 // Implementation pending: needs a series-ID lookup table keyed by topic.
-async function queryBLS(_query, _key) { return null; }
+async function queryBLS() { return null; }
 
 // ─── queryCensus ──────────────────────────────────────────────────────────────
 // Census API requires specific table and variable codes per dataset.
 // Implementation pending: needs a dataset/variable mapping table.
-async function queryCensus(_query, _key) { return null; }
+async function queryCensus() { return null; }
 
 // ─── queryFRED ────────────────────────────────────────────────────────────────
 // Queries the Federal Reserve Bank of St. Louis economic database (FRED).
@@ -178,12 +178,12 @@ async function queryCDC(query, key, searchTerm = query) {
 // ─── Pending implementations ───────────────────────────────────────────────────
 // These stubs maintain the correct call signature for analyze.js.
 // Params prefixed with _ signal intentional non-use until implemented.
-async function queryOECD(_query)              { return null; }
-async function queryIMF(_query)               { return null; }
-async function queryEIA(_query, _key)         { return null; }
-async function queryEurostat(_query)          { return null; }
-async function queryILO(_query)               { return null; }
-async function queryUN(_query)                { return null; }
+async function queryOECD()      { return null; }
+async function queryIMF()       { return null; }
+async function queryEIA()       { return null; }
+async function queryEurostat()  { return null; }
+async function queryILO()       { return null; }
+async function queryUN()        { return null; }
 
 // Expose as browser globals — satisfies ESLint no-unused-vars.
 window.queryPubMed    = queryPubMed;

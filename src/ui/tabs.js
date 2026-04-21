@@ -1,11 +1,10 @@
-/* global $, activeTab, resultContainer, autocorrectFeedback */
+/* global $, resultContainer, autocorrectFeedback */
 
 // ─── UI: TABS ─────────────────────────────────────────────────────────────────
 // switchTab — activates a tab, swaps description text, shows/hides disclaimer,
 // and clears any stale result from the previous tab.
 
 function switchTab(tab) {
-    activeTab = tab;
     const isWeb = tab === 'web';
 
     $('tabOfficial').classList.toggle('tab-active', !isWeb);

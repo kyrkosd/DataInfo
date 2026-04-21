@@ -1,5 +1,4 @@
-/* global $, searchInput, activeTab, autocorrectFeedback, applyAutocorrect,
-          analyzeClaim, analyzeClaimWeb, switchTab */
+/* global $, searchInput, applyAutocorrect, analyzeClaim, analyzeClaimWeb, switchTab */
 
 // ─── UI: EVENTS ───────────────────────────────────────────────────────────────
 // submit — entry point that dispatches to the active tab's analyze function.
@@ -9,7 +8,7 @@ function submit() {
     const query = searchInput.value.trim();
     if (!query) return;
     const corrected = applyAutocorrect(query);
-    if (activeTab === 'web') {
+    if ($('tabWeb').classList.contains('tab-active')) {
         analyzeClaimWeb(corrected);
     } else {
         analyzeClaim(corrected);
