@@ -3,7 +3,9 @@
 
 // ─── CONFIG — edit these values to change behaviour ───────────────────────────
 
-const GEMINI_API_KEY = "";           // https://aistudio.google.com
+const BACKEND_URL = "datainfo-production.up.railway.app";
+
+const GEMINI_API_KEY = "";  // no longer used — key lives on the backend
 const GEMINI_MODEL   = "gemini-2.5-flash";
 
 // Autocorrect dictionary — applied word-by-word before the query is sent.
@@ -61,6 +63,7 @@ const API_SOURCES = {
     ...SOURCES_OCEANIA
 };
 
+window.BACKEND_URL    = BACKEND_URL;
 window.GEMINI_API_KEY = GEMINI_API_KEY;
 window.GEMINI_MODEL   = GEMINI_MODEL;
 window.AUTOCORRECT    = AUTOCORRECT;
