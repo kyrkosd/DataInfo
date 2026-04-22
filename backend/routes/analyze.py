@@ -3,11 +3,34 @@ import asyncio
 import json
 import re
 from urllib.parse import quote
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
+from typing import Optional
 import httpx
+from db import supabase
 
 router = APIRouter()
+
+
+def log_search(token: Optional[str], query: str, tab: str, result_status: str):
+    if not supabase or not token:
+        return
+    try:
+        jwt = token.removeprefix("Bearer ").strip()
+        user = supabase.auth.get_user(jwt)
+        supabase.table("searches").insert({
+            "user_id":       user.user.id,
+            "query":         query,
+            "tab":           tab,
+            "result_status": result_status,
+        }).execute()
+        supabase.table("activity_log").insert({
+            "user_id":  user.user.id,
+            "action":   "search",
+            "metadata": {"tab": tab, "status": result_status},
+        }).execute()
+    except Exception:
+        pass  # never block the response if logging fails
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL   = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
@@ -249,7 +272,7 @@ async def run_source(client: httpx.AsyncClient, key: str, query: str, search_ter
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/analyze")
-async def analyze(req: ClaimRequest):
+async def analyze(req: ClaimRequest, authorization: Optional[str] = Header(default=None)):
     if not GEMINI_API_KEY:
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured on server.")
 
@@ -342,11 +365,12 @@ Respond with a valid JSON object only — no markdown, no extra text:
             if dates:
                 result["data_vintage"] = sorted(dates)[-1]
 
+        log_search(authorization, query, "official", result.get("status", ""))
         return result
 
 
 @router.post("/analyze-web")
-async def analyze_web(req: ClaimRequest):
+async def analyze_web(req: ClaimRequest, authorization: Optional[str] = Header(default=None)):
     if not GEMINI_API_KEY:
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured on server.")
 
@@ -390,4 +414,5 @@ Respond with a valid JSON object only — no markdown, no extra text:
         ]
         result["sources"] = sources or [{"name": "General web search", "url": "#"}]
 
+        log_search(authorization, query, "web", result.get("status", ""))
         return result
