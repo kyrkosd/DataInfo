@@ -3,6 +3,12 @@
 // ─── DOM helper ───────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
+// ─── Cached DOM elements ──────────────────────────────────────────────────────
+const searchInput         = $('searchInput');
+const loadingState        = $('loadingState');
+const resultContainer     = $('resultContainer');
+const autocorrectFeedback = $('autocorrectFeedback');
+
 // ─── applyAutocorrect ─────────────────────────────────────────────────────────
 // Pure function — returns the corrected string. React UI handles the notice.
 function applyAutocorrect(query) {
@@ -46,7 +52,11 @@ async function fetchWithBackoff(url, options, maxRetries = 3) {
     return lastRes;
 }
 
-window.$                = $;
-window.applyAutocorrect = applyAutocorrect;
-window.detectTopics     = detectTopics;
-window.fetchWithBackoff = fetchWithBackoff;
+window.$                  = $;
+window.applyAutocorrect   = applyAutocorrect;
+window.detectTopics       = detectTopics;
+window.fetchWithBackoff   = fetchWithBackoff;
+window.searchInput        = searchInput;
+window.loadingState       = loadingState;
+window.resultContainer    = resultContainer;
+window.autocorrectFeedback = autocorrectFeedback;

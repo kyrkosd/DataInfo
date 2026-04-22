@@ -165,6 +165,25 @@
     <script src="src/ui/display.js"></script>
     <script src="src/ui/tabs.js"></script>
     <script src="src/ui/events.js"></script>
+    <script>
+        window.__di = {
+            setLoadingMsg: function(msg) {
+                loadingState.classList.remove('hidden');
+                loadingState.classList.add('flex');
+                $('loadingMsg').textContent = msg;
+            },
+            onResult: function(data) {
+                loadingState.classList.add('hidden');
+                loadingState.classList.remove('flex');
+                displayResult(data);
+            },
+            onError: function(msg) {
+                loadingState.classList.add('hidden');
+                loadingState.classList.remove('flex');
+                showError(msg);
+            }
+        };
+    </script>
 
 </body>
 </html>
