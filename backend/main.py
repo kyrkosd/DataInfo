@@ -1,3 +1,4 @@
+"""DataInfo API — FastAPI entry point."""
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,4 +24,5 @@ app.include_router(analyze_router, prefix="/api")
 
 @app.get("/health")
 def health():
+    """Return service liveness status."""
     return {"status": "ok"}
