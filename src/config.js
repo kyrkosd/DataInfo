@@ -3,7 +3,7 @@
 
 // ─── CONFIG — edit these values to change behaviour ───────────────────────────
 
-const BACKEND_URL = "datainfo-production.up.railway.app";
+const BACKEND_URL = "https://datainfo-production.up.railway.app";
 
 const GEMINI_API_KEY = "";  // no longer used — key lives on the backend
 const GEMINI_MODEL   = "gemini-2.5-flash";
