@@ -1,242 +1,1133 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-preset="swiss">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DataInfo</title>
-    <meta name="description" content="DataInfo — Statistical Claim Validator">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="src/styles/base.css">
-    <link rel="stylesheet" href="src/styles/result-card.css">
-    <link rel="stylesheet" href="src/styles/components.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DataInfo — Statistical Claim Validator</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,400&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+  :root {
+    --paper:       oklch(99%  0.004 240);
+    --paper-2:     oklch(97%  0.006 240);
+    --paper-3:     oklch(95%  0.008 240);
+    --rule:        oklch(90%  0.010 240);
+    --rule-strong: oklch(82%  0.012 240);
+    --mute:        oklch(58%  0.015 245);
+    --mute-2:      oklch(42%  0.018 245);
+    --ink:         oklch(22%  0.015 250);
+    --ink-deep:    oklch(14%  0.018 250);
+    --accent:      oklch(48%  0.15  255);
+    --accent-soft: oklch(96%  0.03  255);
+    --v-true:      oklch(50%  0.14  155);
+    --v-partial:   oklch(55%  0.14   75);
+    --v-false:     oklch(52%  0.17   25);
+    --v-none:      oklch(55%  0.01  250);
+    --serif: "Source Serif 4", Cambria, Georgia, serif;
+    --sans:  "Inter Tight", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    --mono:  "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    --r: 3px;
+    --r-lg: 6px;
+    --pad: 24px;
+  }
+  html[data-preset="editorial"] {
+    --paper:   oklch(98.5% 0.008 70);
+    --paper-2: oklch(96%   0.012 70);
+    --paper-3: oklch(93%   0.016 70);
+    --rule:    oklch(88%   0.018 70);
+    --rule-strong: oklch(78% 0.020 70);
+    --ink:     oklch(20% 0.025 40);
+    --ink-deep:oklch(12% 0.030 40);
+    --mute:    oklch(52% 0.025 60);
+    --accent:  oklch(42% 0.14 28);
+    --accent-soft: oklch(95% 0.04 40);
+    --r: 2px; --r-lg: 4px;
+  }
+  html[data-preset="mono"] {
+    --paper:   oklch(97%   0.003 240);
+    --paper-2: oklch(94%   0.004 240);
+    --paper-3: oklch(91%   0.005 240);
+    --rule:    oklch(84%   0.008 240);
+    --ink:     oklch(18%   0.010 250);
+    --ink-deep:oklch(10%   0.010 250);
+    --accent:  oklch(35%   0.06  245);
+    --accent-soft: oklch(94% 0.015 245);
+    --serif: "JetBrains Mono", ui-monospace, monospace;
+    --r: 0px; --r-lg: 0px;
+  }
+  html[data-preset="soft"] {
+    --paper:   oklch(99% 0.004 250);
+    --paper-2: oklch(97% 0.010 250);
+    --paper-3: oklch(95% 0.015 250);
+    --rule:    oklch(91% 0.014 250);
+    --ink:     oklch(28% 0.025 250);
+    --ink-deep:oklch(20% 0.030 250);
+    --mute:    oklch(55% 0.025 250);
+    --accent:  oklch(58% 0.14  250);
+    --accent-soft: oklch(95% 0.03 250);
+    --r: 10px; --r-lg: 14px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "ss01","cv11";
+  }
+  ::selection { background: var(--accent); color: var(--paper); }
+  .serif { font-family: var(--serif); font-weight: 400; letter-spacing: -0.01em; }
+  .mono  { font-family: var(--mono); font-feature-settings: "zero","ss02"; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .shell { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+  @media (max-width: 640px) { .shell { padding: 0 20px; } }
+
+  /* Topbar */
+  .topbar {
+    border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: saturate(140%) blur(8px);
+    background: color-mix(in oklch, var(--paper) 88%, transparent);
+  }
+  .topbar-inner { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand-mark { font-family: var(--serif); font-size: 22px; letter-spacing: -0.02em; color: var(--ink-deep); }
+  .brand-mark .dot { color: var(--accent); }
+  .brand-meta { font-family: var(--mono); font-size: 11px; color: var(--mute); letter-spacing: 0.04em; }
+  .nav-actions { display: flex; gap: 6px; align-items: center; }
+  .nav-btn {
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: var(--ink); background: transparent;
+    border: 1px solid transparent; padding: 7px 12px;
+    border-radius: var(--r); cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .nav-btn:hover { background: var(--paper-2); border-color: var(--rule); }
+  .nav-btn.ghost { color: var(--mute); }
+  .nav-btn-solid { background: var(--ink-deep); color: var(--paper); border-color: var(--ink-deep); }
+  .nav-btn-solid:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+  .brand-row { display: flex; align-items: center; gap: 24px; }
+  .auth-actions { display: flex; gap: 6px; align-items: center; padding-right: 20px; border-right: 1px solid var(--rule); }
+  .auth-email { font-family: var(--mono); font-size: 11px; color: var(--mute); }
+  @media (max-width: 640px) { .brand-row { gap: 12px; } .auth-actions { padding-right: 12px; } .brand-meta { display: none; } }
+
+  /* Tabs */
+  .tabs { display: flex; align-items: center; border-bottom: 1px solid var(--rule); }
+  .tab {
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: var(--mute); background: transparent; border: 0;
+    padding: 14px 2px; margin-right: 28px; cursor: pointer;
+    position: relative; letter-spacing: -0.005em;
+  }
+  .tab[aria-selected="true"] { color: var(--ink-deep); }
+  .tab[aria-selected="true"]::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+    height: 1px; background: var(--ink-deep);
+  }
+  .tab-num { font-family: var(--mono); font-size: 10px; color: var(--mute); margin-right: 8px; vertical-align: 1px; }
+
+  /* Hero */
+  .hero { padding: 72px 0 40px; }
+  @media (max-width: 640px) { .hero { padding: 40px 0 28px; } }
+  .eyebrow-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--mute); }
+  .eyebrow-row .rule { flex: 0 0 40px; height: 1px; background: var(--rule-strong); }
+  .display {
+    font-family: var(--serif); font-weight: 400;
+    font-size: clamp(36px, 5.4vw, 64px);
+    line-height: 1.02; letter-spacing: -0.022em;
+    color: var(--ink-deep); margin: 0 0 20px; max-width: 18ch;
+    font-optical-sizing: auto; font-variation-settings: "opsz" 48;
+  }
+  .display em { font-style: italic; color: var(--mute-2); font-weight: 300; }
+  .lede { font-family: var(--sans); font-size: 16px; color: var(--mute); max-width: 56ch; margin: 0; text-wrap: pretty; }
+
+  /* Search */
+  .search {
+    margin-top: 40px;
+    border: 1px solid var(--rule-strong); border-radius: var(--r-lg);
+    background: var(--paper);
+    display: grid; grid-template-columns: 28px 1fr auto;
+    align-items: center; padding: 4px 4px 4px 16px; gap: 10px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .search:focus-within {
+    border-color: var(--ink-deep);
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--accent) 10%, transparent);
+  }
+  .search-icon { width: 14px; height: 14px; border: 1.5px solid var(--mute); border-radius: 50%; position: relative; }
+  .search-icon::after {
+    content: ""; position: absolute; bottom: -5px; right: -5px;
+    width: 6px; height: 1.5px; background: var(--mute); transform: rotate(45deg);
+  }
+  .search input {
+    border: 0; outline: 0; background: transparent;
+    font-family: var(--sans); font-size: 17px; color: var(--ink-deep);
+    padding: 16px 0; width: 100%;
+  }
+  .search input::placeholder { color: var(--mute); font-style: italic; font-family: var(--serif); }
+  .btn-primary {
+    font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: -0.005em;
+    background: var(--ink-deep); color: var(--paper); border: 0;
+    padding: 12px 18px; border-radius: calc(var(--r-lg) - 2px);
+    cursor: pointer; display: inline-flex; align-items: center; gap: 10px;
+    transition: background .15s;
+  }
+  .btn-primary:hover { background: var(--accent); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary .kbd {
+    font-family: var(--mono); font-size: 10px;
+    border: 1px solid color-mix(in oklch, var(--paper) 30%, transparent);
+    padding: 2px 5px; border-radius: 3px; opacity: .7;
+  }
+  .hints { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: var(--mute); font-size: 13px; }
+  .hints .label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; margin-right: 4px; }
+  .chip {
+    font-family: var(--sans); font-size: 12.5px; color: var(--ink);
+    border: 1px solid var(--rule); background: var(--paper);
+    padding: 5px 10px; border-radius: 100px; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .chip:hover { border-color: var(--ink-deep); background: var(--paper-2); }
+  .autocorrect { margin-top: 14px; font-size: 13px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .autocorrect .mark {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+    background: var(--accent-soft); color: var(--accent);
+    padding: 2px 6px; border-radius: 3px;
+  }
+  .disclaimer {
+    margin-top: 28px; display: grid; grid-template-columns: 3px 1fr; gap: 14px;
+    padding: 14px 16px; background: var(--paper-2); border-radius: var(--r); border: 1px solid var(--rule);
+  }
+  .disclaimer .bar { background: var(--accent); border-radius: 2px; }
+  .disclaimer p { margin: 0; font-size: 13px; color: var(--mute-2); max-width: 72ch; }
+  .disclaimer strong { color: var(--ink-deep); font-weight: 500; }
+
+  /* Section */
+  .section { padding: 48px 0; border-top: 1px solid var(--rule); }
+  .section-head { display: grid; grid-template-columns: 220px 1fr; gap: 32px; align-items: baseline; margin-bottom: 24px; }
+  @media (max-width: 720px) { .section-head { grid-template-columns: 1fr; gap: 8px; } }
+  .section-head h3 { font-family: var(--serif); font-size: 26px; font-weight: 400; letter-spacing: -0.015em; margin: 0; color: var(--ink-deep); }
+  .section-head .meta p { margin: 0; color: var(--mute); font-size: 14px; max-width: 60ch; }
+
+  /* Empty state */
+  .empty-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--r); overflow: hidden; }
+  @media (max-width: 720px) { .empty-grid { grid-template-columns: 1fr; } }
+  .empty-card {
+    background: var(--paper); padding: 20px; cursor: pointer;
+    transition: background .15s; display: flex; flex-direction: column; gap: 8px; min-height: 120px;
+    border: 0; text-align: left; width: 100%;
+  }
+  .empty-card:hover { background: var(--paper-2); }
+  .empty-card .num { font-family: var(--mono); font-size: 10px; color: var(--mute); letter-spacing: .08em; }
+  .empty-card .ex { font-family: var(--serif); font-size: 17px; color: var(--ink-deep); line-height: 1.25; letter-spacing: -0.01em; }
+  .empty-card .tag { margin-top: auto; font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--mute); }
+
+  /* Loading */
+  .loading { padding: 40px 0; display: grid; grid-template-columns: 220px 1fr; gap: 32px; }
+  @media (max-width: 720px) { .loading { grid-template-columns: 1fr; } }
+  .loading-title { font-family: var(--serif); font-size: 22px; letter-spacing: -0.015em; color: var(--ink-deep); margin: 0 0 16px; }
+  .loading-steps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--rule); }
+  .loading-steps li { display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--rule); font-size: 14px; color: var(--mute); }
+  .loading-steps li .idx { font-family: var(--mono); font-size: 11px; color: var(--mute); letter-spacing: .05em; }
+  .loading-steps li .status { font-family: var(--mono); font-size: 10.5px; color: var(--mute); letter-spacing: .08em; text-transform: uppercase; }
+  .loading-steps li[data-state="done"] { color: var(--ink); }
+  .loading-steps li[data-state="done"] .status { color: var(--v-true); }
+  .loading-steps li[data-state="active"] { color: var(--ink-deep); }
+  .loading-steps li[data-state="active"] .status { color: var(--accent); }
+  .loading-steps li[data-state="active"] .status::before {
+    content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); margin-right: 8px;
+    animation: pulse 1.2s ease-in-out infinite; vertical-align: 1px;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
+
+  /* Result card — primary */
+  .result { border: 1px solid var(--rule); border-radius: var(--r-lg); background: var(--paper); overflow: hidden; }
+  .result-head { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 18px 24px; border-bottom: 1px solid var(--rule); background: var(--paper-2); gap: 16px; }
+  .result-head .left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .verdict-mark { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-deep); }
+  .verdict-mark .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--v-none); }
+  .verdict-mark[data-status="true"]    .dot { background: var(--v-true); }
+  .verdict-mark[data-status="partial"] .dot { background: var(--v-partial); }
+  .verdict-mark[data-status="false"]   .dot { background: var(--v-false); }
+  .verdict-mark[data-status="no_data"] .dot { background: var(--v-none); }
+  .meta-pill { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); display: inline-flex; align-items: center; gap: 6px; }
+  .meta-pill::before { content: ""; display: inline-block; width: 1px; height: 10px; background: var(--rule-strong); }
+  .result-body { padding: 28px 24px; }
+  .claim-quote { font-family: var(--serif); font-style: italic; color: var(--mute-2); font-size: 15px; margin: 0 0 16px; border-left: 2px solid var(--rule-strong); padding-left: 14px; max-width: 62ch; }
+  .verdict-title { font-family: var(--serif); font-size: clamp(26px, 3vw, 34px); line-height: 1.1; letter-spacing: -0.018em; color: var(--ink-deep); margin: 0 0 14px; max-width: 28ch; font-weight: 400; }
+  .verdict-number { font-family: var(--serif); font-variation-settings: "opsz" 48; color: var(--accent); font-style: italic; }
+  .verdict-text { font-family: var(--sans); font-size: 15.5px; color: var(--ink); max-width: 64ch; margin: 0; text-wrap: pretty; }
+  .subgroup { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--rule); display: grid; grid-template-columns: 180px 1fr; gap: 24px; }
+  @media (max-width: 720px) { .subgroup { grid-template-columns: 1fr; gap: 8px; } }
+  .subgroup h4 { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); margin: 0; font-weight: 500; }
+  .kvs { display: flex; flex-direction: column; gap: 10px; }
+  .kv { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 16px; padding-bottom: 10px; border-bottom: 1px dashed var(--rule); font-size: 14px; }
+  .kv:last-child { border-bottom: 0; padding-bottom: 0; }
+  .kv .k { color: var(--mute); }
+  .kv .v { color: var(--ink-deep); font-family: var(--mono); font-size: 12.5px; }
+  .alt-list { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .alt-list li { font-size: 13.5px; color: var(--mute-2); padding-left: 14px; position: relative; }
+  .alt-list li::before { content: "–"; position: absolute; left: 0; color: var(--mute); font-family: var(--mono); font-size: 12px; }
+  .reasoning { margin: 6px 0 0; padding: 0; list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 10px; }
+  .reasoning li { counter-increment: step; display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 14px; color: var(--ink); line-height: 1.5; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+  .reasoning li:last-child { border-bottom: 0; padding-bottom: 0; }
+  .reasoning li::before { content: "0" counter(step); font-family: var(--mono); font-size: 11px; color: var(--mute); letter-spacing: .05em; padding-top: 3px; }
+  .sources { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+  .source { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--rule); font-size: 14px; }
+  .source:last-child { border-bottom: 0; }
+  .source a { color: var(--ink-deep); text-decoration: none; border-bottom: 1px solid var(--rule-strong); padding-bottom: 1px; }
+  .source a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  .source .evidence { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+  .result-foot { padding: 14px 24px; border-top: 1px solid var(--rule); background: var(--paper-2); display: flex; justify-content: space-between; align-items: center; gap: 16px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); flex-wrap: wrap; }
+  .result-foot .actions { display: flex; gap: 14px; }
+  .result-foot button { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; background: transparent; border: 0; color: var(--mute); cursor: pointer; padding: 0; }
+  .result-foot button:hover { color: var(--ink-deep); }
+
+  /* Result card — report */
+  .result.report { border: 0; background: transparent; border-radius: 0; }
+  .result.report .result-head, .result.report .result-foot { background: transparent; border-left: 0; border-right: 0; padding-left: 0; padding-right: 0; }
+  .result.report .result-head { border-top: 1px solid var(--ink-deep); border-bottom: 1px solid var(--rule); }
+  .result.report .result-body { padding: 36px 0; }
+  .result.report .verdict-title { font-size: clamp(32px, 4.2vw, 48px); max-width: 22ch; }
+
+  /* Result card — mono */
+  .result.mono-card { border-radius: 0; border: 1px solid var(--ink-deep); }
+  .result.mono-card .result-head { background: var(--ink-deep); color: var(--paper); border-bottom: 0; }
+  .result.mono-card .verdict-mark { color: var(--paper); }
+  .result.mono-card .meta-pill { color: color-mix(in oklch, var(--paper) 70%, var(--mute)); }
+  .result.mono-card .meta-pill::before { background: color-mix(in oklch, var(--paper) 30%, transparent); }
+  .result.mono-card .verdict-title { font-family: var(--mono); font-size: 22px; letter-spacing: -0.01em; max-width: 42ch; }
+  .result.mono-card .verdict-text { font-family: var(--mono); font-size: 13.5px; line-height: 1.6; }
+  .result.mono-card .claim-quote { font-family: var(--mono); font-style: normal; font-size: 12.5px; }
+  .result.mono-card .verdict-number { font-family: var(--mono); font-style: normal; }
+
+  /* Error */
+  .error-box { padding: 24px; background: var(--paper-2); border: 1px solid var(--rule); border-radius: var(--r-lg); }
+  .error-box p { margin: 0; font-family: var(--mono); font-size: 13px; color: var(--v-false); }
+
+  /* Footer */
+  footer { border-top: 1px solid var(--rule); margin-top: 64px; padding: 28px 0 48px; font-size: 12.5px; color: var(--mute); }
+  footer .row { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  footer .col { display: flex; flex-direction: column; gap: 4px; }
+  footer .colophon { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--mute); }
+
+  /* Modal */
+  .scrim { position: fixed; inset: 0; background: color-mix(in oklch, var(--ink-deep) 40%, transparent); backdrop-filter: blur(4px); z-index: 50; display: grid; place-items: center; padding: 24px; }
+  .modal { background: var(--paper); max-width: 720px; width: 100%; max-height: 86vh; overflow-y: auto; border-radius: var(--r-lg); border: 1px solid var(--rule); box-shadow: 0 30px 80px -30px oklch(0% 0 0 / 0.3); }
+  .modal-sm { max-width: 400px; }
+  .modal-head { position: sticky; top: 0; background: var(--paper); display: flex; justify-content: space-between; align-items: baseline; padding: 22px 28px 14px; border-bottom: 1px solid var(--rule); }
+  .modal-head h2 { font-family: var(--serif); font-weight: 400; font-size: 24px; letter-spacing: -0.015em; margin: 0; }
+  .modal-close { background: transparent; border: 1px solid var(--rule); border-radius: var(--r); width: 28px; height: 28px; color: var(--mute); cursor: pointer; font-size: 14px; display: grid; place-items: center; }
+  .modal-close:hover { color: var(--ink-deep); border-color: var(--ink-deep); }
+  .modal-body { padding: 20px 28px 28px; }
+  .guide-section { padding: 18px 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 54px 1fr; gap: 20px; }
+  .guide-section:last-child { border-bottom: 0; }
+  .guide-section .num { font-family: var(--serif); font-style: italic; font-size: 28px; color: var(--mute); font-weight: 300; }
+  .guide-section h3 { font-family: var(--serif); font-size: 18px; font-weight: 400; margin: 0 0 8px; color: var(--ink-deep); }
+  .guide-section p, .guide-section li { font-size: 14px; color: var(--mute-2); line-height: 1.55; }
+  .guide-section ul { margin: 6px 0 0; padding-left: 18px; }
+  .guide-section li { margin-bottom: 4px; }
+  .guide-section li strong { color: var(--ink-deep); font-weight: 500; }
+
+  /* Auth form */
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+  .form-input { width: 100%; padding: 10px 12px; border: 1px solid var(--rule-strong); border-radius: var(--r); outline: none; font-family: var(--sans); font-size: 14px; color: var(--ink-deep); background: var(--paper); transition: border-color .15s; }
+  .form-input:focus { border-color: var(--ink-deep); }
+  .form-error { font-size: 13px; color: var(--v-false); margin: 0; }
+  .form-switch { margin-top: 16px; font-size: 13px; text-align: center; color: var(--mute); }
+  .form-switch button { background: transparent; border: 0; padding: 0; cursor: pointer; color: var(--accent); font-family: var(--sans); font-size: 13px; }
+
+  /* Tweaks */
+  .tweaks-fab { position: fixed; right: 20px; bottom: 20px; z-index: 40; background: var(--ink-deep); color: var(--paper); border: 0; border-radius: 100px; padding: 10px 16px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; box-shadow: 0 10px 30px -10px oklch(0% 0 0 / 0.4); }
+  .tweaks-fab:hover { background: var(--accent); }
+  .tweaks-panel { position: fixed; right: 20px; bottom: 68px; z-index: 41; background: var(--paper); border: 1px solid var(--rule-strong); border-radius: var(--r-lg); width: 280px; padding: 16px; box-shadow: 0 20px 60px -20px oklch(0% 0 0 / 0.35); }
+  .tweaks-panel h4 { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); margin: 0 0 12px; font-weight: 500; display: flex; justify-content: space-between; align-items: baseline; }
+  .tweaks-panel .close-x { font-size: 14px; color: var(--mute); cursor: pointer; background: transparent; border: 0; }
+  .tweak-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .tweak-group > label { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+  .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .preset-btn { font-family: var(--sans); font-size: 12px; font-weight: 500; background: var(--paper-2); border: 1px solid var(--rule); border-radius: var(--r); padding: 8px 10px; cursor: pointer; color: var(--ink); text-align: left; display: flex; flex-direction: column; gap: 2px; }
+  .preset-btn .sub { font-family: var(--mono); font-size: 9.5px; color: var(--mute); text-transform: uppercase; letter-spacing: .08em; }
+  .preset-btn[aria-selected="true"] { border-color: var(--ink-deep); background: var(--paper); }
+  .alt-grid { display: flex; gap: 6px; }
+  .alt-grid button { flex: 1; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; background: var(--paper-2); border: 1px solid var(--rule); border-radius: var(--r); padding: 7px; cursor: pointer; color: var(--mute); }
+  .alt-grid button[aria-selected="true"] { border-color: var(--ink-deep); color: var(--ink-deep); background: var(--paper); }
+
+  @media (max-width: 640px) { .result-head { padding: 14px 16px; } .result-body { padding: 22px 16px; } .result-foot { padding: 12px 16px; } .section { padding: 32px 0; } }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--rule-strong); border-radius: 100px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
 </head>
-<body class="antialiased min-h-screen flex flex-col">
+<body>
 
-    <!-- ── NAV ─────────────────────────────────────────────────────────────── -->
-    <nav class="bg-stone-100 border-b border-stone-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-stone-300 text-stone-700 rounded font-bold flex items-center justify-center text-sm">DI</div>
-            <h1 class="text-2xl font-bold text-stone-800 tracking-tight">DataInfo</h1>
-        </div>
-        <div class="flex items-center gap-3">
-            <span id="authUserName" class="hidden text-sm text-stone-500 font-medium"></span>
-            <button id="historyBtn" class="hidden px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-md font-medium transition-colors text-sm">
-                History
-            </button>
-            <button id="authBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium transition-colors text-sm">
-                Login / Sign up
-            </button>
-            <button id="helpBtn" class="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-700 rounded-md font-medium transition-colors">
-                Guide
-            </button>
-        </div>
-    </nav>
+<div id="root"></div>
 
-    <!-- ── PAGE TABS ─────────────────────────────────────────────────────────── -->
-    <!-- Official Sources: RAG mode, no web access. Web Search: Google grounding enabled. -->
-    <div class="bg-stone-100 border-b border-stone-300">
-        <div class="container mx-auto px-4 max-w-6xl flex gap-1 pt-2">
-            <button id="tabOfficial" class="tab-btn tab-active px-5 py-2.5 rounded-t-lg font-semibold text-sm transition-colors">
-                Official Sources
-            </button>
-            <button id="tabWeb" class="tab-btn px-5 py-2.5 rounded-t-lg font-semibold text-sm transition-colors">
-                Web Search
-            </button>
-        </div>
-    </div>
+<script>
+  window.__TWEAK_DEFAULTS = { "preset": "swiss", "resultVariant": "primary" };
+</script>
 
-    <!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
-    <main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
-        <section class="mb-16">
+<script src="src/sources/global.js"></script>
+<script src="src/sources/americas.js"></script>
+<script src="src/sources/europe.js"></script>
+<script src="src/sources/asia.js"></script>
+<script src="src/sources/africa.js"></script>
+<script src="src/sources/oceania.js"></script>
+<script src="src/config.js"></script>
+<script src="src/utils.js"></script>
+<script src="src/auth.js"></script>
+<script src="src/api.js"></script>
+<script src="src/analyze.js"></script>
 
-            <div class="text-center max-w-3xl mx-auto mb-10">
-                <h2 class="text-4xl font-extrabold text-stone-900 mb-4">Validate Statistical Claims</h2>
-                <p id="pageDesc" class="text-lg text-stone-600">Enter a statistical claim below. Our tool queries official databases and cites verified sources.</p>
-                <div id="webDisclaimer" class="hidden mt-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-4 py-3 text-sm max-w-xl mx-auto">
-                    <strong>Note:</strong> Web Search results come from general web sources and may include unofficial or unverified content. Use critical judgment when interpreting these results.
-                </div>
-            </div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
 
-            <!-- Search bar -->
-            <div class="max-w-2xl mx-auto bg-white p-2 rounded-xl shadow-md border border-stone-200 flex items-center">
-                <div class="pl-4 text-stone-400"><span class="css-icon-search"></span></div>
-                <input type="text" id="searchInput"
-                    class="w-full px-4 py-3 outline-none text-lg text-stone-800 bg-transparent placeholder-stone-400"
-                    placeholder="e.g., 67% of Americans are overweight...">
-                <button id="searchSubmit"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors whitespace-nowrap">
-                    Analyze Claim
-                </button>
-            </div>
-            <p id="autocorrectFeedback" class="max-w-2xl mx-auto text-sm text-indigo-600 mt-3 text-left font-medium hidden pl-4"></p>
+function normalizeResult(data, query) {
+    const normSources = (sources) => {
+        if (!Array.isArray(sources)) return [];
+        return sources.map(s => {
+            if (typeof s === 'string') return { name: s, url: '#', evidence: 'Source' };
+            return {
+                name: s.name || s.title || s.url || 'Source',
+                url: s.url || '#',
+                evidence: s.evidence || s.type || 'Verified Source',
+            };
+        });
+    };
+    return {
+        claim:          query || data.query || '',
+        status:         data.status || data.result_status || 'no_data',
+        title:          data.title || '',
+        text:           data.text || data.summary || '',
+        metric_used:    data.metric_used || '',
+        alternatives:   Array.isArray(data.alternatives) ? data.alternatives : [],
+        challenge_type: data.challenge_type || data.intent || '',
+        confidence:     data.confidence || '',
+        data_vintage:   data.data_vintage || data.vintage || '',
+        reasoning_steps: Array.isArray(data.reasoning_steps) ? data.reasoning_steps : [],
+        sources:        normSources(data.sources),
+    };
+}
 
-            <!-- Loading state -->
-            <div id="loadingState" class="hidden flex flex-col items-center justify-center mt-12">
-                <div class="loader mb-4"></div>
-                <p id="loadingMsg" class="text-stone-500 font-medium animate-pulse">Querying official databases...</p>
-            </div>
-
-            <!-- Result card -->
-            <div id="resultContainer" class="hidden max-w-3xl mx-auto mt-12 border-l-4 rounded-r-xl p-6 shadow-sm">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 id="resultStatus" class="text-2xl font-bold uppercase tracking-wide"></h3>
-                    <span id="resultBadge" class="px-3 py-1 rounded-full text-sm font-bold"></span>
-                </div>
-                <div id="challengeInfo" class="hidden flex flex-wrap items-center gap-2 mb-4 text-xs">
-                    <span id="challengeBadge" class="px-2 py-0.5 rounded font-semibold bg-purple-100 text-purple-800"></span>
-                    <span id="confidenceBadge" class="px-2 py-0.5 rounded font-semibold"></span>
-                </div>
-                <p id="resultText" class="text-stone-700 text-lg mb-6 leading-relaxed"></p>
-
-                <!-- Reasoning steps -->
-                <div id="reasoningSection" class="hidden mb-4 bg-stone-50 border border-stone-200 rounded-lg overflow-hidden text-sm">
-                    <button id="reasoningToggle" class="flex items-center justify-between w-full px-4 py-2.5 font-semibold text-stone-700 hover:bg-stone-100 transition-colors">
-                        <span>Reasoning Steps</span>
-                        <span id="reasoningArrow" class="text-stone-400">▼</span>
-                    </button>
-                    <ol id="reasoningList" class="list-decimal pl-8 pr-4 pb-3 space-y-1 text-stone-600 hidden"></ol>
-                </div>
-
-                <!-- Metric disambiguation -->
-                <div id="metricInfo" class="hidden mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-stone-700">
-                    <p class="mb-1"><strong class="text-blue-800">Metric used:</strong> <span id="metricUsed"></span></p>
-                    <div id="alternativesSection" class="hidden mt-2">
-                        <strong class="text-blue-800">Alternative definitions:</strong>
-                        <ul id="alternativesList" class="list-disc pl-5 mt-1 space-y-0.5 text-stone-600"></ul>
+/* ── TopBar ─────────────────────────────────────────────────────────── */
+function TopBar({ user, onLogin, onHistory, onHelp, onLogout }) {
+    return (
+        <header className="topbar">
+            <div className="shell topbar-inner">
+                <div className="brand-row">
+                    <div className="auth-actions">
+                        {user ? (
+                            <>
+                                <span className="auth-email">{user.email}</span>
+                                <button className="nav-btn ghost" onClick={onHistory}>History</button>
+                                <button className="nav-btn ghost" onClick={onLogout}>Log out</button>
+                            </>
+                        ) : (
+                            <>
+                                <button className="nav-btn ghost" onClick={onLogin}>Log in</button>
+                                <button className="nav-btn nav-btn-solid" onClick={onLogin}>Sign up</button>
+                            </>
+                        )}
+                    </div>
+                    <div className="brand">
+                        <div className="brand-mark">DataInfo<span className="dot">.</span></div>
+                        <div className="brand-meta">STATISTICAL CLAIM VALIDATOR · v2</div>
                     </div>
                 </div>
-
-                <div class="bg-white bg-opacity-50 p-4 rounded-lg border border-stone-200">
-                    <h4 id="sourcesLabel" class="font-semibold text-stone-800 mb-2">Verified Sources:</h4>
-                    <ul id="resultSources" class="list-disc pl-5 text-indigo-600 space-y-1"></ul>
-                    <p id="dataVintage" class="hidden mt-3 text-xs text-stone-400 italic"></p>
-                </div>
+                <nav className="nav-actions">
+                    <button className="nav-btn ghost">Sources</button>
+                    <button className="nav-btn ghost">Changelog</button>
+                    <button className="nav-btn" onClick={onHelp}>Guide</button>
+                </nav>
             </div>
+        </header>
+    );
+}
 
-            <div class="text-center mt-8 text-sm text-stone-500">
-                <p>Start from a real claim.</p>
-            </div>
-
-        </section>
-    </main>
-
-    <!-- ── HISTORY MODAL ─────────────────────────────────────────────────────── -->
-    <div id="historyModal" class="fixed inset-0 bg-stone-900 bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col relative">
-            <div class="flex items-center justify-between p-6 border-b border-stone-200">
-                <h2 class="text-2xl font-bold text-stone-900">Search History</h2>
-                <button id="closeHistoryModal" class="text-stone-400 hover:text-stone-800 text-3xl font-bold">&times;</button>
-            </div>
-            <div id="historyList" class="overflow-y-auto p-6 space-y-3 flex-1">
-                <p class="text-stone-400 text-sm text-center py-8">Loading...</p>
+/* ── Tabs ───────────────────────────────────────────────────────────── */
+function Tabs({ tab, setTab }) {
+    return (
+        <div className="shell">
+            <div className="tabs" role="tablist">
+                <button role="tab" aria-selected={tab === 'official'} className="tab" onClick={() => setTab('official')}>
+                    <span className="tab-num">01</span>Official Sources
+                </button>
+                <button role="tab" aria-selected={tab === 'web'} className="tab" onClick={() => setTab('web')}>
+                    <span className="tab-num">02</span>Web Search
+                </button>
             </div>
         </div>
-    </div>
+    );
+}
 
-    <!-- ── AUTH MODAL ───────────────────────────────────────────────────────── -->
-    <div id="authModal" class="fixed inset-0 bg-stone-900 bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-8 relative">
-            <button id="closeAuthModal" class="absolute top-4 right-6 text-stone-400 hover:text-stone-800 text-3xl font-bold">&times;</button>
-            <h2 id="authTitle" class="text-2xl font-bold text-stone-900 mb-6">Login</h2>
-            <form id="authForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-stone-700 mb-1">Email</label>
-                    <input id="authEmail" type="email" required
-                        class="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-stone-800">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-stone-700 mb-1">Password</label>
-                    <input id="authPassword" type="password" required minlength="6"
-                        class="w-full px-4 py-2 border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-stone-800">
-                </div>
-                <p id="authError" class="hidden text-sm text-rose-600 font-medium"></p>
-                <button id="authSubmitBtn" type="submit"
-                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-semibold transition-colors">
-                    Login
+/* ── Hero ───────────────────────────────────────────────────────────── */
+function Hero({ tab, onSubmit, autocorrect, disabled }) {
+    const [value, setValue] = useState('');
+
+    const examples = [
+        '67% of Americans are overweight',
+        'AI will replace 30% of jobs by 2030',
+        'Global literacy rate 2023',
+        'US inflation 2024',
+    ];
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (value.trim() && !disabled) onSubmit(value.trim());
+    };
+
+    const handleChip = (ex) => {
+        setValue(ex);
+        if (!disabled) onSubmit(ex);
+    };
+
+    return (
+        <section className="hero">
+            <div className="eyebrow-row">
+                <div className="rule"></div>
+                <div className="eyebrow">{tab === 'web' ? 'Web Search · Gemini Grounding' : 'Official Sources · RAG Mode'}</div>
+            </div>
+            <h2 className="display">
+                Verify a claim<br/>
+                <em>against official data.</em>
+            </h2>
+            <p className="lede">
+                {tab === 'web'
+                    ? 'Ask Gemini to search the open web. Sources may include unofficial content — use judgment.'
+                    : 'DataInfo queries whitelisted institutional APIs — CDC, WHO, World Bank, PubMed, BLS — and feeds only that data to the model. No web crawl, no hallucinated citations.'}
+            </p>
+
+            <form className="search" onSubmit={handleSubmit}>
+                <span className="search-icon" aria-hidden="true"></span>
+                <input
+                    type="text"
+                    placeholder="e.g. 67% of Americans are overweight…"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                />
+                <button type="submit" className="btn-primary" disabled={disabled}>
+                    Analyze claim <span className="kbd">↵</span>
                 </button>
             </form>
-            <p class="mt-4 text-sm text-center text-stone-500">
-                <span id="authSwitchText">Don't have an account? </span>
-                <button id="authSwitchLink" class="text-indigo-600 hover:underline font-medium">Sign up</button>
-            </p>
-        </div>
-    </div>
 
-    <!-- ── GUIDE MODAL ──────────────────────────────────────────────────────── -->
-    <div id="guideModal" class="fixed inset-0 bg-stone-900 bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-8 relative">
-            <button id="closeModal" class="absolute top-4 right-6 text-stone-400 hover:text-stone-800 text-3xl font-bold">&times;</button>
-            <h2 class="text-3xl font-bold text-stone-900 mb-6 border-b pb-4">Guide: A few words about the tool.</h2>
-            <div class="space-y-6 text-stone-700">
-                <p class="text-lg font-medium text-indigo-700">This guide details the way of usage and reason behind the tool.</p>
-                <div>
-                    <h3 class="text-xl font-bold text-stone-800 mb-2">1. Fact checking.</h3>
-                    <ul class="list-disc pl-5 space-y-2">
-                        <li><strong>Only official data:</strong> The data provided here are only from official sources. So, conspiracy theorists, you won't find any data from aliensandreptilesruletheworld.com.</li>
-                        <li><strong>Backend API Layer:</strong> The data comes from API calls, so the AI only manipulates them to provide the text. No hallucinations, no biases.</li>
-                        <li><strong>No personal data:</strong> No sign-in required, so don't worry about your privacy.</li>
-                    </ul>
+            {autocorrect && (
+                <div className="autocorrect">
+                    <span className="mark">autocorrect</span>
+                    <span>Interpreted as "{autocorrect}".</span>
                 </div>
-                <div>
-                    <h3 class="text-xl font-bold text-stone-800 mb-2">2. Future development</h3>
-                    <ul class="list-disc pl-5 space-y-2">
-                        <li><strong>Web Search tab:</strong> Already live — search the general web for perspectives beyond official data.</li>
-                        <li><strong>Reviewing and conducting reports:</strong> You will be able to review and conduct reports based on official data.</li>
-                    </ul>
+            )}
+
+            <div className="hints">
+                <span className="label">Try</span>
+                {examples.map((ex) => (
+                    <button key={ex} className="chip" onClick={() => handleChip(ex)}>{ex}</button>
+                ))}
+            </div>
+
+            {tab === 'web' && (
+                <div className="disclaimer">
+                    <div className="bar"></div>
+                    <p><strong>Note.</strong> Web Search mode retrieves pages beyond the institutional whitelist. Verdicts may reference blogs, press releases, or op-eds — not just primary data. Prefer Official Sources for regulated or high-stakes claims.</p>
                 </div>
-                <div>
-                    <h3 class="text-xl font-bold text-stone-800 mb-2">3. Who is it for?</h3>
-                    <ul class="list-disc pl-5 space-y-2">
-                        <li><strong>People trying to win an argument:</strong> Look no further.</li>
-                        <li><strong>Students:</strong> Check data for research or homework. Use it to learn, not to copy-paste.</li>
-                    </ul>
+            )}
+        </section>
+    );
+}
+
+/* ── EmptyState ─────────────────────────────────────────────────────── */
+function EmptyState({ onExample }) {
+    const examples = [
+        { ex: 'Global life expectancy in 2023 vs 2000',  tag: 'WHO · World Bank' },
+        { ex: 'Median US household income is $80K',       tag: 'Census · BLS'     },
+        { ex: 'Atmospheric CO₂ crossed 420 ppm',          tag: 'NOAA · World Bank' },
+        { ex: 'Obesity rate in OECD countries',           tag: 'WHO · CDC'        },
+        { ex: 'US unemployment rate last quarter',        tag: 'BLS · FRED'       },
+        { ex: 'Global poverty under $2.15/day',           tag: 'World Bank'       },
+    ];
+    return (
+        <section className="section">
+            <div className="shell">
+                <div className="section-head">
+                    <div><div className="eyebrow">§ Examples</div></div>
+                    <div className="meta">
+                        <h3>Start from a real claim.</h3>
+                        <p>A curated set of verifiable prompts across health, economics, demography and environment. Click to run — each is routed to the relevant source automatically.</p>
+                    </div>
                 </div>
+                <div className="empty-grid">
+                    {examples.map((e, i) => (
+                        <button key={i} className="empty-card" onClick={() => onExample(e.ex)}>
+                            <div className="num">{String(i + 1).padStart(2, '0')} / {String(examples.length).padStart(2, '0')}</div>
+                            <div className="ex">{e.ex}</div>
+                            <div className="tag">{e.tag}</div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+/* ── LoadingState ───────────────────────────────────────────────────── */
+function LoadingState({ claim, loadingMsg }) {
+    const steps = [
+        { label: 'Autocorrect & intent parsing',       state: 'done'    },
+        { label: 'Routing to topic-matched sources',   state: 'done'    },
+        { label: loadingMsg || 'Querying databases',   state: 'active'  },
+        { label: 'Assembling RAG context',             state: 'pending' },
+        { label: 'Drafting verdict',                   state: 'pending' },
+    ];
+    return (
+        <section className="section">
+            <div className="shell loading">
+                <div><div className="eyebrow">§ Analyzing</div></div>
                 <div>
-                    <h3 class="text-xl font-bold text-stone-800 mb-2">4. Who not to use:</h3>
-                    <ul class="list-disc pl-5 space-y-2">
-                        <li><strong>Conspiracy theorists:</strong> You won't find your sources here. Even though they are fun to read.</li>
-                    </ul>
+                    <h3 className="loading-title">{claim ? `"${claim}"` : 'Analyzing claim…'}</h3>
+                    <ol className="loading-steps">
+                        {steps.map((s, i) => (
+                            <li key={i} data-state={s.state}>
+                                <span className="idx">{String(i + 1).padStart(2, '0')}</span>
+                                <span>{s.label}</span>
+                                <span className="status">
+                                    {s.state === 'done'    && 'Complete'}
+                                    {s.state === 'active'  && 'Running'}
+                                    {s.state === 'pending' && 'Queued'}
+                                </span>
+                            </li>
+                        ))}
+                    </ol>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+/* ── ResultCard ─────────────────────────────────────────────────────── */
+function ResultCard({ data, variant }) {
+    const [expanded, setExpanded] = useState(true);
+
+    const cls = ['result'];
+    if (variant === 'report') cls.push('report');
+    if (variant === 'mono')   cls.push('mono-card');
+
+    const statusLabel = {
+        true:    'Verified',
+        partial: 'Partially Verified',
+        false:   'Unverified / False',
+        no_data: 'No Official Data',
+    }[data.status] || '—';
+
+    const titleParts = (data.title || '').split(/(\d+(?:\.\d+)?%?)/);
+
+    return (
+        <article className={cls.join(' ')}>
+            <header className="result-head">
+                <div className="left">
+                    <span className="verdict-mark" data-status={data.status}>
+                        <span className="dot"></span>
+                        {statusLabel}
+                    </span>
+                    {data.challenge_type && <span className="meta-pill">{data.challenge_type}</span>}
+                    {data.confidence     && <span className="meta-pill">{data.confidence} confidence</span>}
+                </div>
+                <div className="left">
+                    {data.data_vintage && <span className="meta-pill">{data.data_vintage}</span>}
+                </div>
+            </header>
+
+            <div className="result-body">
+                {data.claim && <p className="claim-quote">"{data.claim}"</p>}
+                <h2 className="verdict-title">
+                    {titleParts.map((part, i) =>
+                        /\d+(?:\.\d+)?%?/.test(part)
+                            ? <span key={i} className="verdict-number">{part}</span>
+                            : <span key={i}>{part}</span>
+                    )}
+                </h2>
+                <p className="verdict-text">{data.text}</p>
+
+                {(data.metric_used || data.alternatives?.length > 0) && (
+                    <div className="subgroup">
+                        <h4>Metric</h4>
+                        <div>
+                            {data.metric_used && (
+                                <div className="kvs">
+                                    <div className="kv">
+                                        <span className="k">Definition used</span>
+                                        <span className="v">{data.metric_used}</span>
+                                    </div>
+                                </div>
+                            )}
+                            {data.alternatives?.length > 0 && (
+                                <div style={{ marginTop: 14 }}>
+                                    <div className="eyebrow" style={{ marginBottom: 6 }}>Alternative definitions</div>
+                                    <ul className="alt-list">
+                                        {data.alternatives.map((a, i) => <li key={i}>{a}</li>)}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {data.reasoning_steps?.length > 0 && (
+                    <div className="subgroup">
+                        <h4>
+                            <button
+                                onClick={() => setExpanded(v => !v)}
+                                style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', color: 'inherit', font: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit' }}
+                            >
+                                Reasoning {expanded ? '▲' : '+'}
+                            </button>
+                        </h4>
+                        {expanded && (
+                            <ol className="reasoning">
+                                {data.reasoning_steps.map((s, i) => <li key={i}>{s}</li>)}
+                            </ol>
+                        )}
+                    </div>
+                )}
+
+                {data.sources?.length > 0 && (
+                    <div className="subgroup">
+                        <h4>Sources</h4>
+                        <ul className="sources">
+                            {data.sources.map((s, i) => (
+                                <li key={i} className="source">
+                                    <a href={s.url} target="_blank" rel="noopener noreferrer">{s.name}</a>
+                                    <span className="evidence">{s.evidence}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
+
+            <footer className="result-foot">
+                <span>Audit · {data.sources?.length || 0} sources{data.data_vintage ? ` · ${data.data_vintage}` : ''}</span>
+                <div className="actions">
+                    <button>Report issue</button>
+                </div>
+            </footer>
+        </article>
+    );
+}
+
+/* ── AuthModal ──────────────────────────────────────────────────────── */
+function AuthModal({ open, onClose }) {
+    const [isSignup, setIsSignup] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        if (open) window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [open, onClose]);
+
+    if (!open) return null;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!window._supabaseClient) { setError('Auth service unavailable.'); return; }
+        setLoading(true); setError('');
+        const { error: err } = isSignup
+            ? await window._supabaseClient.auth.signUp({ email, password })
+            : await window._supabaseClient.auth.signInWithPassword({ email, password });
+        setLoading(false);
+        if (err) { setError(err.message); return; }
+        setEmail(''); setPassword('');
+        onClose();
+    };
+
+    return (
+        <div className="scrim" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="modal modal-sm">
+                <div className="modal-head">
+                    <h2>{isSignup ? 'Create account' : 'Log in'}</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+                </div>
+                <div className="modal-body">
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <div className="form-field">
+                            <label className="form-label">Email</label>
+                            <input className="form-input" type="email" required value={email} onChange={e => setEmail(e.target.value)} />
+                        </div>
+                        <div className="form-field">
+                            <label className="form-label">Password</label>
+                            <input className="form-input" type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} />
+                        </div>
+                        {error && <p className="form-error">{error}</p>}
+                        <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
+                            {loading ? '…' : (isSignup ? 'Create account' : 'Log in')}
+                        </button>
+                    </form>
+                    <p className="form-switch">
+                        {isSignup ? 'Already have an account? ' : "Don't have an account? "}
+                        <button onClick={() => { setIsSignup(v => !v); setError(''); }}>
+                            {isSignup ? 'Log in' : 'Sign up'}
+                        </button>
+                    </p>
                 </div>
             </div>
         </div>
-    </div>
+    );
+}
 
-    <!-- ── SCRIPTS ───────────────────────────────────────────────────────────── -->
-    <!-- Load order matters: sources → config → utils → auth → api → analyze → ui -->
-    <script src="src/sources/global.js"></script>
-    <script src="src/sources/americas.js"></script>
-    <script src="src/sources/europe.js"></script>
-    <script src="src/sources/asia.js"></script>
-    <script src="src/sources/africa.js"></script>
-    <script src="src/sources/oceania.js"></script>
-    <script src="src/config.js"></script>
-    <script src="src/utils.js"></script>
-    <script src="src/auth.js"></script>
-    <script src="src/api.js"></script>
-    <script src="src/analyze.js"></script>
-    <script src="src/ui/display.js"></script>
-    <script src="src/ui/tabs.js"></script>
-    <script src="src/ui/events.js"></script>
-    <script>
+/* ── HistoryModal ───────────────────────────────────────────────────── */
+const STATUS_COLORS = {
+    true:    'var(--v-true)',
+    partial: 'var(--v-partial)',
+    false:   'var(--v-false)',
+    no_data: 'var(--mute)',
+};
+const STATUS_TEXT = {
+    true: 'Verified', partial: 'Partial', false: 'False', no_data: 'No Data',
+};
+
+function HistoryModal({ open, onClose }) {
+    const [searches, setSearches] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        if (open) { window.addEventListener('keydown', onKey); loadHistory(); }
+        return () => window.removeEventListener('keydown', onKey);
+    }, [open]);
+
+    const loadHistory = async () => {
+        setLoading(true); setError(null);
+        try {
+            const headers = (await window.getAuthHeaders?.()) || {};
+            const res  = await fetch(`${window.BACKEND_URL}/api/history`, { headers });
+            const data = await res.json();
+            setSearches(data.searches || []);
+        } catch {
+            setError('Failed to load history.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!open) return null;
+
+    return (
+        <div className="scrim" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="modal">
+                <div className="modal-head">
+                    <h2>Search History</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+                </div>
+                <div className="modal-body">
+                    {loading && (
+                        <p style={{ color: 'var(--mute)', textAlign: 'center', padding: '20px 0', fontFamily: 'var(--mono)', fontSize: 12 }}>Loading…</p>
+                    )}
+                    {error && (
+                        <p style={{ color: 'var(--v-false)', textAlign: 'center', padding: '20px 0', fontSize: 13 }}>{error}</p>
+                    )}
+                    {!loading && !error && searches.length === 0 && (
+                        <p style={{ color: 'var(--mute)', textAlign: 'center', padding: '20px 0', fontFamily: 'var(--mono)', fontSize: 12 }}>No searches yet.</p>
+                    )}
+                    {searches.map((s, i) => {
+                        const color = STATUS_COLORS[s.result_status] || STATUS_COLORS.no_data;
+                        const text  = STATUS_TEXT[s.result_status]   || 'No Data';
+                        const date  = new Date(s.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                        return (
+                            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, padding: '12px 0', borderBottom: '1px solid var(--rule)' }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <p style={{ margin: 0, color: 'var(--ink-deep)', fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.query}</p>
+                                    <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--mute)', fontFamily: 'var(--mono)' }}>{date} · {s.tab === 'web' ? 'Web' : 'Official'}</p>
+                                </div>
+                                <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '.08em', textTransform: 'uppercase', color, flexShrink: 0 }}>{text}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ── GuideModal ─────────────────────────────────────────────────────── */
+function GuideModal({ open, onClose }) {
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        if (open) window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [open, onClose]);
+
+    if (!open) return null;
+    return (
+        <div className="scrim" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="modal">
+                <div className="modal-head">
+                    <h2>A few words about the tool.</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+                </div>
+                <div className="modal-body">
+                    <div className="guide-section">
+                        <div className="num">i.</div>
+                        <div>
+                            <h3>Fact checking</h3>
+                            <ul>
+                                <li><strong>Only official data.</strong> Results cite institutional APIs — CDC, WHO, World Bank, PubMed, BLS, Census.</li>
+                                <li><strong>The model is an analyst, not a crawler.</strong> Gemini receives only the data the tool explicitly fetched — no web snippets.</li>
+                                <li><strong>Sign in to save history.</strong> Queries run against the backend. No sign-in required to search.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="guide-section">
+                        <div className="num">ii.</div>
+                        <div>
+                            <h3>What's coming</h3>
+                            <ul>
+                                <li><strong>Report builder.</strong> Collect multiple verdicts into a single citable document.</li>
+                                <li><strong>Source weighting.</strong> Prefer agencies with tighter methodology for contested topics.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="guide-section">
+                        <div className="num">iii.</div>
+                        <div>
+                            <h3>Who it's for</h3>
+                            <ul>
+                                <li><strong>Researchers and students.</strong> Learn the underlying figures before citing them.</li>
+                                <li><strong>Journalists and analysts.</strong> Pressure-test a claim before it ships.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="guide-section">
+                        <div className="num">iv.</div>
+                        <div>
+                            <h3>Who it isn't for</h3>
+                            <ul>
+                                <li><strong>Conspiracy theorists.</strong> The whitelist is intentional.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ── Tweaks ─────────────────────────────────────────────────────────── */
+function Tweaks({ preset, setPreset, variant, setVariant }) {
+    const [open, setOpen] = useState(false);
+
+    const presets = [
+        { id: 'swiss',     label: 'Swiss',     sub: 'Neutral / grid'    },
+        { id: 'editorial', label: 'Editorial', sub: 'Warm / serif'      },
+        { id: 'mono',      label: 'Mono',      sub: 'Terminal / tight'  },
+        { id: 'soft',      label: 'Soft',      sub: 'Rounded / modern'  },
+    ];
+    const variants = [
+        { id: 'primary', label: 'Card'     },
+        { id: 'report',  label: 'Report'   },
+        { id: 'mono',    label: 'Terminal' },
+    ];
+
+    return (
+        <>
+            <button className="tweaks-fab" onClick={() => setOpen(v => !v)}>Tweaks</button>
+            {open && (
+                <aside className="tweaks-panel" role="dialog" aria-label="Tweaks">
+                    <h4>
+                        Tweaks
+                        <button className="close-x" onClick={() => setOpen(false)}>×</button>
+                    </h4>
+                    <div className="tweak-group">
+                        <label>Aesthetic preset</label>
+                        <div className="preset-grid">
+                            {presets.map((p) => (
+                                <button key={p.id} className="preset-btn" aria-selected={preset === p.id}
+                                    onClick={() => setPreset(p.id)}>
+                                    {p.label}
+                                    <span className="sub">{p.sub}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="tweak-group">
+                        <label>Result card layout</label>
+                        <div className="alt-grid">
+                            {variants.map((v) => (
+                                <button key={v.id} aria-selected={variant === v.id}
+                                    onClick={() => setVariant(v.id)}>
+                                    {v.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </aside>
+            )}
+        </>
+    );
+}
+
+/* ── App ────────────────────────────────────────────────────────────── */
+function App() {
+    const [tab,        setTab]        = useState('official');
+    const [preset,     setPreset]     = useState(window.__TWEAK_DEFAULTS?.preset         || 'swiss');
+    const [variant,    setVariant]    = useState(window.__TWEAK_DEFAULTS?.resultVariant  || 'primary');
+    const [appState,   setAppState]   = useState('empty');
+    const [query,      setQuery]      = useState('');
+    const [result,     setResult]     = useState(null);
+    const [error,      setError]      = useState(null);
+    const [autocorrect,setAutocorrect]= useState(null);
+    const [loadingMsg, setLoadingMsg] = useState('Querying official databases…');
+    const [showGuide,  setShowGuide]  = useState(false);
+    const [showAuth,   setShowAuth]   = useState(false);
+    const [showHistory,setShowHistory]= useState(false);
+    const [user,       setUser]       = useState(null);
+
+    const queryRef = useRef('');
+
+    useEffect(() => { document.documentElement.setAttribute('data-preset', preset); }, [preset]);
+
+    useEffect(() => {
+        if (!window._supabaseClient) return;
+        window._supabaseClient.auth.getSession().then(({ data }) => setUser(data?.session?.user ?? null));
+        const { data: { subscription } } = window._supabaseClient.auth.onAuthStateChange((_, session) => {
+            setUser(session?.user ?? null);
+        });
+        return () => subscription.unsubscribe();
+    }, []);
+
+    useEffect(() => {
         window.__di = {
-            setLoadingMsg: function(msg) {
-                loadingState.classList.remove('hidden');
-                loadingState.classList.add('flex');
-                $('loadingMsg').textContent = msg;
+            setLoadingMsg: (msg) => setLoadingMsg(msg),
+            onResult: (data) => {
+                setResult(normalizeResult(data, queryRef.current));
+                setAppState('result');
             },
-            onResult: function(data) {
-                loadingState.classList.add('hidden');
-                loadingState.classList.remove('flex');
-                displayResult(data);
+            onError: (msg) => {
+                setError(msg);
+                setAppState('error');
             },
-            onError: function(msg) {
-                loadingState.classList.add('hidden');
-                loadingState.classList.remove('flex');
-                showError(msg);
-            }
         };
-    </script>
+    }, []);
 
+    const runQuery = (q) => {
+        queryRef.current = q;
+        setQuery(q);
+        setAppState('loading');
+        setLoadingMsg('Querying official databases…');
+        setError(null);
+        setResult(null);
+        setAutocorrect(null);
+        if (tab === 'web') {
+            window.analyzeClaimWeb?.(q);
+        } else {
+            window.analyzeClaim?.(q);
+        }
+    };
+
+    const reset = () => {
+        setAppState('empty');
+        setQuery('');
+        setResult(null);
+        setError(null);
+        setAutocorrect(null);
+    };
+
+    const variantLabel = { primary: 'The answer, in context.', report: 'Read the full report.', mono: '$ datainfo --verify' }[variant];
+
+    return (
+        <>
+            <TopBar
+                user={user}
+                onLogin={() => setShowAuth(true)}
+                onHistory={() => setShowHistory(true)}
+                onHelp={() => setShowGuide(true)}
+                onLogout={() => window._supabaseClient?.auth.signOut()}
+            />
+            <Tabs tab={tab} setTab={(t) => { setTab(t); reset(); }} />
+
+            <main className="shell">
+                <Hero tab={tab} onSubmit={runQuery} autocorrect={autocorrect} disabled={appState === 'loading'} />
+            </main>
+
+            {appState === 'empty' && <EmptyState onExample={runQuery} />}
+
+            {appState === 'loading' && <LoadingState claim={query} loadingMsg={loadingMsg} />}
+
+            {appState === 'error' && (
+                <section className="section">
+                    <div className="shell">
+                        <div className="error-box">
+                            <p>Error: {error}</p>
+                            <button className="nav-btn" style={{ marginTop: 12, border: '1px solid var(--rule)' }} onClick={reset}>← Try again</button>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {appState === 'result' && result && (
+                <section className="section">
+                    <div className="shell">
+                        <div className="section-head">
+                            <div><div className="eyebrow">§ Verdict</div></div>
+                            <div className="meta">
+                                <h3>{variantLabel}</h3>
+                                <p>Verdict, metric definition, reasoning trail and cited sources. Every number links back to the agency that published it.</p>
+                            </div>
+                        </div>
+                        <ResultCard data={result} variant={variant} />
+                        <div style={{ marginTop: 20 }}>
+                            <button className="nav-btn" style={{ border: '1px solid var(--rule)' }} onClick={reset}>← Ask another claim</button>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            <footer>
+                <div className="shell row">
+                    <div className="col">
+                        <div className="colophon">DataInfo / 2026 / Open-source</div>
+                        <div>Built with Gemini · CDC · WHO · World Bank · PubMed · BLS</div>
+                    </div>
+                    <div className="col" style={{ textAlign: 'right' }}>
+                        <div className="colophon">Supabase · Railway · Netlify</div>
+                        <div>Sign in to save your search history.</div>
+                    </div>
+                </div>
+            </footer>
+
+            <GuideModal   open={showGuide}   onClose={() => setShowGuide(false)}   />
+            <AuthModal    open={showAuth}    onClose={() => setShowAuth(false)}    />
+            <HistoryModal open={showHistory} onClose={() => setShowHistory(false)} />
+            <Tweaks preset={preset} setPreset={setPreset} variant={variant} setVariant={setVariant} />
+        </>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
 </body>
 </html>
