@@ -28,7 +28,7 @@ function setAuthUI(user) {
 
 // ── Auth state listener ───────────────────────────────────────────────────────
 
-_supabase.auth.onAuthStateChange((_event, session) => {
+_supabase.auth.onAuthStateChange((_, session) => {
     setAuthUI(session?.user ?? null);
 });
 

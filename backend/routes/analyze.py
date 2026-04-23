@@ -3,11 +3,13 @@ import os
 import asyncio
 import json
 import re
+from typing import Optional
 from urllib.parse import quote
+
+import httpx
 from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
-from typing import Optional
-import httpx
+
 from db import supabase
 
 router = APIRouter()
@@ -88,7 +90,7 @@ EVIDENCE_TYPES = {
 
 # ── Pydantic models ───────────────────────────────────────────────────────────
 
-class ClaimRequest(BaseModel):
+class ClaimRequest(BaseModel):  # pylint: disable=too-few-public-methods
     """Request body for both analyze endpoints."""
 
     query: str
@@ -170,9 +172,11 @@ async def preprocess_claim(
 
 
 def _build_official_prompt(
-    context: str, geo_ctx: str, time_ctx: str, query: str
+    context: str, intent: Optional[dict], query: str
 ) -> str:
     """Build the Gemini prompt for official-sources fact-checking."""
+    geo_ctx  = f"Geographic focus: {intent['geography']}." if intent and intent.get("geography") else ""
+    time_ctx = f"Time period referenced: {intent['time_period']}." if intent and intent.get("time_period") else ""
     return (
         "You are a strict statistical fact-checker.\n\n"
         "Below is data retrieved directly from official sources. "
@@ -380,30 +384,27 @@ async def analyze(
         ]
 
         search_terms = intent.get("search_terms", {}) if intent else {}
-        tasks        = [run_source(client, k, query, search_terms) for k in selected]
-        results      = [r for r in await asyncio.gather(*tasks) if r]
+        results      = [
+            r for r in await asyncio.gather(
+                *[run_source(client, k, query, search_terms) for k in selected]
+            ) if r
+        ]
 
         if not results:
-            label = ", ".join(topics) if topics else "general"
             return {
                 "status": "no_data", "title": "No Official Data Found",
-                "text": f"No results from the {label} sources. Try rephrasing.",
+                "text": (
+                    f"No results from the {', '.join(topics) if topics else 'general'}"
+                    " sources. Try rephrasing."
+                ),
                 "sources": [],
             }
 
-        context  = "\n\n".join(
+        context = "\n\n".join(
             f"=== {r['label']} [{r.get('evidence_type', 'Official Data')}] ===\n{r['data']}"
             for r in results
         )
-        geo_ctx  = (
-            f"Geographic focus: {intent['geography']}."
-            if intent and intent.get("geography") else ""
-        )
-        time_ctx = (
-            f"Time period referenced: {intent['time_period']}."
-            if intent and intent.get("time_period") else ""
-        )
-        prompt   = _build_official_prompt(context, geo_ctx, time_ctx, query)
+        prompt  = _build_official_prompt(context, intent, query)
 
         data   = await gemini_post(client, {"contents": [{"parts": [{"text": prompt}]}]})
         raw    = data["candidates"][0]["content"]["parts"][0]["text"]
