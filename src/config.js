@@ -3,7 +3,9 @@
 
 // ─── CONFIG — edit these values to change behaviour ───────────────────────────
 
-const BACKEND_URL = "https://datainfo-production.up.railway.app";
+const BACKEND_URL      = "https://datainfo-production.up.railway.app";
+const SUPABASE_URL     = "https://yrhroqchvodfuhxsldlo.supabase.co";   // ← paste your Supabase project URL  (Settings → API)
+const SUPABASE_ANON_KEY = "sb_publishable_SgBd3xDxkLXcqvTd52XN7Q_gyJI39zJ";  // ← paste your publishable/anon key  (Settings → API)
 
 const GEMINI_API_KEY = "";  // no longer used — key lives on the backend
 const GEMINI_MODEL   = "gemini-2.5-flash";
@@ -63,7 +65,9 @@ const API_SOURCES = {
     ...SOURCES_OCEANIA
 };
 
-window.BACKEND_URL    = BACKEND_URL;
+window.BACKEND_URL       = BACKEND_URL;
+window.SUPABASE_URL      = SUPABASE_URL;
+window.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
 window.GEMINI_API_KEY = GEMINI_API_KEY;
 window.GEMINI_MODEL   = GEMINI_MODEL;
 window.AUTOCORRECT    = AUTOCORRECT;
