@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from routes.analyze import router as analyze_router
+from routes.history import router as history_router
+from routes.admin import router as admin_router
 
 load_dotenv()
 
@@ -20,6 +22,8 @@ app.add_middleware(
 )
 
 app.include_router(analyze_router, prefix="/api")
+app.include_router(history_router, prefix="/api")
+app.include_router(admin_router,   prefix="/api")
 
 
 @app.get("/health")
