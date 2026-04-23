@@ -175,8 +175,16 @@ def _build_official_prompt(
     context: str, intent: Optional[dict], query: str
 ) -> str:
     """Build the Gemini prompt for official-sources fact-checking."""
-    geo_ctx  = f"Geographic focus: {intent['geography']}." if intent and intent.get("geography") else ""
-    time_ctx = f"Time period referenced: {intent['time_period']}." if intent and intent.get("time_period") else ""
+    geo_ctx  = (
+        f"Geographic focus: {intent['geography']}."
+        if intent and intent.get("geography")
+        else ""
+    )
+    time_ctx = (
+        f"Time period referenced: {intent['time_period']}."
+        if intent and intent.get("time_period")
+        else ""
+    )
     return (
         "You are a strict statistical fact-checker.\n\n"
         "Below is data retrieved directly from official sources. "

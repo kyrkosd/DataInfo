@@ -1,3 +1,4 @@
+"""Supabase client initialisation."""
 import os
 from supabase import create_client, Client
 

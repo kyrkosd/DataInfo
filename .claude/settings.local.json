@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__cyclopt__analyze_violations",
+      "mcp__cyclopt__check_analysis_job"
+    ]
+  }
+}
