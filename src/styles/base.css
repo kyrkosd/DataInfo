@@ -1,9 +1,0 @@
-/* ── Base ──────────────────────────────────────────────────────────────────────
-   Global body styles: background, text colour, font stack.
-   To change the site font, replace the font-family value here.          */
-
-body {
-    background-color: #2c3e50;
-    color: #f8fafc;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
