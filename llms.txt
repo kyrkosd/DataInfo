@@ -1,0 +1,40 @@
+# DataInfo
+
+> DataInfo is a statistical claim validator. Users submit a claim and the tool checks it against official institutional databases, returning a sourced verdict.
+
+DataInfo is a free web application that verifies statistical and factual claims using data from whitelisted official sources only — no general web crawl. The tool is designed for researchers, students, journalists, and analysts who need to pressure-test a number or claim before citing it.
+
+## How it works
+
+Users type a statistical claim (e.g. "67% of Americans are overweight") and choose a mode:
+
+- **Official Sources mode**: Queries CDC, WHO, World Bank, PubMed, BLS, Census Bureau and other institutional APIs. The language model receives only that fetched data — no web snippets, no hallucinated citations.
+- **Web Search mode**: Uses Gemini grounding to search the open web. Sources may include unofficial content.
+
+The tool returns a structured verdict: Verified, Partially Verified, Unverified/False, or No Official Data — along with the metric definition used, alternative definitions, a reasoning trail, and cited sources linking back to the originating agency.
+
+## Data sources
+
+- CDC NHANES, CDC Wonder
+- WHO Global Health Observatory
+- World Bank Open Data
+- PubMed / NCBI
+- U.S. Bureau of Labor Statistics (BLS)
+- U.S. Census Bureau
+- OECD Stats
+- NOAA / climate databases
+
+## Use cases
+
+- Fact-checking statistical claims in journalism, research, and debate
+- Verifying figures before citing them in academic work
+- Exploring what official data actually says on a topic
+
+## What it is not
+
+DataInfo does not crawl conspiracy sites, blogs, or unverified sources in Official Sources mode. It is not a general search engine.
+
+## Links
+
+- App: https://datainfo.netlify.app
+- Backend API: https://datainfo-production.up.railway.app

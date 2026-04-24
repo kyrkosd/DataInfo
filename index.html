@@ -4,6 +4,22 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>DataInfo — Statistical Claim Validator</title>
+<meta name="description" content="Verify statistical claims against official data. DataInfo queries CDC, WHO, World Bank, PubMed and BLS — then returns a sourced verdict with reasoning. No hallucinations, no unofficial sources.">
+<meta name="keywords" content="fact checker, statistical claim validator, official data, CDC, WHO, World Bank, PubMed, BLS, data verification">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://datainfo.netlify.app/">
+
+<!-- OpenGraph -->
+<meta property="og:type"        content="website">
+<meta property="og:url"         content="https://datainfo.netlify.app/">
+<meta property="og:title"       content="DataInfo — Statistical Claim Validator">
+<meta property="og:description" content="Type a statistical claim. DataInfo checks it against CDC, WHO, World Bank, PubMed and BLS — and returns a sourced verdict. Free, no sign-in required.">
+<meta property="og:site_name"   content="DataInfo">
+
+<!-- Twitter / X -->
+<meta name="twitter:card"        content="summary">
+<meta name="twitter:title"       content="DataInfo — Statistical Claim Validator">
+<meta name="twitter:description" content="Verify statistical claims against official institutional data. Sourced verdicts from CDC, WHO, World Bank, PubMed, BLS.")
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -432,7 +448,7 @@ function normalizeResult(data, query) {
 }
 
 /* ── TopBar ─────────────────────────────────────────────────────────── */
-function TopBar({ user, onLogin, onHistory, onHelp, onLogout }) {
+function TopBar({ user, onLogin, onHistory, onHelp, onSources, onChangelog, onLogout }) {
     return (
         <header className="topbar">
             <div className="shell topbar-inner">
@@ -457,8 +473,8 @@ function TopBar({ user, onLogin, onHistory, onHelp, onLogout }) {
                     </div>
                 </div>
                 <nav className="nav-actions">
-                    <button className="nav-btn ghost">Sources</button>
-                    <button className="nav-btn ghost">Changelog</button>
+                    <button className="nav-btn ghost" onClick={onSources}>Sources</button>
+                    <button className="nav-btn ghost" onClick={onChangelog}>Changelog</button>
                     <button className="nav-btn" onClick={onHelp}>Guide</button>
                 </nav>
             </div>
@@ -873,6 +889,119 @@ function HistoryModal({ open, onClose }) {
     );
 }
 
+/* ── SourcesModal ───────────────────────────────────────────────────── */
+function SourcesModal({ open, onClose }) {
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        if (open) window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [open, onClose]);
+
+    const sources = [
+        { name: 'CDC NHANES & CDC Wonder',         desc: 'U.S. health and nutrition statistics, disease surveillance.',            tag: 'Health' },
+        { name: 'WHO Global Health Observatory',   desc: 'Global mortality, disease burden, and health system indicators.',       tag: 'Health' },
+        { name: 'World Bank Open Data',            desc: 'GDP, poverty, population, education, and development indicators.',      tag: 'Economics' },
+        { name: 'PubMed / NCBI',                   desc: 'Peer-reviewed biomedical and life sciences research abstracts.',        tag: 'Research' },
+        { name: 'U.S. Bureau of Labor Statistics', desc: 'Employment, inflation (CPI), wages, and productivity.',                tag: 'Economics' },
+        { name: 'U.S. Census Bureau',              desc: 'U.S. population, demographics, housing, and income.',                  tag: 'Demographics' },
+        { name: 'OECD Stats',                      desc: 'Cross-country comparisons on economy, society, and environment.',      tag: 'Economics' },
+        { name: 'NOAA / Climate databases',        desc: 'Atmospheric CO₂, temperature anomalies, and climate indicators.',      tag: 'Environment' },
+    ];
+
+    if (!open) return null;
+    return (
+        <div className="scrim" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="modal">
+                <div className="modal-head">
+                    <h2>Official Sources</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+                </div>
+                <div className="modal-body">
+                    <p style={{ margin: '0 0 20px', fontSize: 14, color: 'var(--mute-2)', maxWidth: '62ch' }}>
+                        DataInfo only queries the following whitelisted institutional APIs. The model receives only the data explicitly fetched from these sources — no web crawl, no unverified content.
+                    </p>
+                    {sources.map((s, i) => (
+                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, padding: '14px 0', borderBottom: '1px solid var(--rule)', alignItems: 'start' }}>
+                            <div>
+                                <p style={{ margin: '0 0 3px', fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink-deep)', letterSpacing: '-0.01em' }}>{s.name}</p>
+                                <p style={{ margin: 0, fontSize: 13, color: 'var(--mute)', maxWidth: '56ch' }}>{s.desc}</p>
+                            </div>
+                            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--mute)', paddingTop: 3 }}>{s.tag}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ── ChangelogModal ──────────────────────────────────────────────────── */
+function ChangelogModal({ open, onClose }) {
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        if (open) window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [open, onClose]);
+
+    const entries = [
+        {
+            version: 'v2',
+            date: 'April 2026',
+            changes: [
+                'Complete UI redesign — typographic system with serif/mono/sans scale',
+                'Four aesthetic presets: Swiss, Editorial, Mono, Soft (Tweaks panel)',
+                'Three result card layouts: Card, Report, Terminal',
+                'Supabase auth — sign in to save search history',
+                'Search history modal with verdict status per query',
+                'Admin analytics endpoint',
+                'AI discoverability: llms.txt, robots.txt, OpenGraph tags',
+            ],
+        },
+        {
+            version: 'v1',
+            date: '2025',
+            changes: [
+                'Initial launch',
+                'Official Sources mode — RAG against CDC, WHO, World Bank, PubMed, BLS',
+                'Web Search mode — Gemini grounding against the open web',
+                'FastAPI backend on Railway — API keys hidden server-side',
+                'Verdict system: Verified, Partially Verified, False, No Official Data',
+                'Reasoning steps, metric disambiguation, source citations',
+            ],
+        },
+    ];
+
+    if (!open) return null;
+    return (
+        <div className="scrim" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="modal">
+                <div className="modal-head">
+                    <h2>Changelog</h2>
+                    <button className="modal-close" onClick={onClose} aria-label="Close">×</button>
+                </div>
+                <div className="modal-body">
+                    {entries.map((entry, i) => (
+                        <div key={i} style={{ paddingBottom: 28, marginBottom: 28, borderBottom: i < entries.length - 1 ? '1px solid var(--rule)' : 'none' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 14 }}>
+                                <span style={{ fontFamily: 'var(--serif)', fontSize: 22, color: 'var(--ink-deep)', letterSpacing: '-0.015em' }}>{entry.version}</span>
+                                <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--mute)' }}>{entry.date}</span>
+                            </div>
+                            <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                {entry.changes.map((c, j) => (
+                                    <li key={j} style={{ display: 'grid', gridTemplateColumns: '16px 1fr', gap: 10, fontSize: 14, color: 'var(--mute-2)', lineHeight: 1.5 }}>
+                                        <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--mute)', paddingTop: 2 }}>+</span>
+                                        <span>{c}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 /* ── GuideModal ─────────────────────────────────────────────────────── */
 function GuideModal({ open, onClose }) {
     useEffect(() => {
@@ -1001,9 +1130,11 @@ function App() {
     const [error,      setError]      = useState(null);
     const [autocorrect,setAutocorrect]= useState(null);
     const [loadingMsg, setLoadingMsg] = useState('Querying official databases…');
-    const [showGuide,  setShowGuide]  = useState(false);
-    const [showAuth,   setShowAuth]   = useState(false);
-    const [showHistory,setShowHistory]= useState(false);
+    const [showGuide,    setShowGuide]    = useState(false);
+    const [showAuth,     setShowAuth]     = useState(false);
+    const [showHistory,  setShowHistory]  = useState(false);
+    const [showSources,  setShowSources]  = useState(false);
+    const [showChangelog,setShowChangelog]= useState(false);
     const [user,       setUser]       = useState(null);
 
     const queryRef = useRef('');
@@ -1065,6 +1196,8 @@ function App() {
                 onLogin={() => setShowAuth(true)}
                 onHistory={() => setShowHistory(true)}
                 onHelp={() => setShowGuide(true)}
+                onSources={() => setShowSources(true)}
+                onChangelog={() => setShowChangelog(true)}
                 onLogout={() => window._supabaseClient?.auth.signOut()}
             />
             <Tabs tab={tab} setTab={(t) => { setTab(t); reset(); }} />
@@ -1119,9 +1252,11 @@ function App() {
                 </div>
             </footer>
 
-            <GuideModal   open={showGuide}   onClose={() => setShowGuide(false)}   />
-            <AuthModal    open={showAuth}    onClose={() => setShowAuth(false)}    />
-            <HistoryModal open={showHistory} onClose={() => setShowHistory(false)} />
+            <GuideModal      open={showGuide}      onClose={() => setShowGuide(false)}      />
+            <AuthModal       open={showAuth}       onClose={() => setShowAuth(false)}       />
+            <HistoryModal    open={showHistory}    onClose={() => setShowHistory(false)}    />
+            <SourcesModal    open={showSources}    onClose={() => setShowSources(false)}    />
+            <ChangelogModal  open={showChangelog}  onClose={() => setShowChangelog(false)}  />
             <Tweaks preset={preset} setPreset={setPreset} variant={variant} setVariant={setVariant} />
         </>
     );
